@@ -30,33 +30,33 @@ function Courts() {
   const mockCourts = [
     { 
       id: 1, 
-      name: 'Sân bóng đá trung tâm',
+      name: 'Sân bóng đá Mỹ Đình',
       type: 'soccer',
       location: 'Quận Hoàn Kiếm, Hà Nội',
       rating: 4.8,
       capacity: 22,
-      price: '200.000đ',
-      image: 'https://images.unsplash.com/photo-1520473378652-85d9c4aee6cf?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2069&q=80'
+      price: '2.000.000đ',
+      image: 'https://images2.thanhnien.vn/zoom/700_438/Uploaded/lanphuong/2022_12_24/san-my-dinh-mat-co-1-truoc-tran-ma-aff-cup-2022-2412-2560.jpg'
     },
     { 
       id: 2, 
-      name: 'Sân bóng rổ phía Tây',
+      name: 'Sân bóng rổ Phú Thọ',
       type: 'basketball',
-      location: 'Quận 7, TP.HCM',
+      location: 'Quận 11, TP.HCM',
       rating: 4.5,
       capacity: 10,
-      price: '150.000đ',
-      image: 'https://images.unsplash.com/photo-1505666287802-931dc83a5dc9?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2069&q=80'
+      price: '300.000đ',
+      image: 'https://hutisport.vn/wp-content/uploads/2024/03/san-bong-ro-o-tphcm.png'
     },
     { 
       id: 3, 
       name: 'Sân Tennis Riverside',
       type: 'tennis',
-      location: 'Quận Tây Hồ, Hà Nội',
+      location: 'Quận 12, TP.HCM',
       rating: 4.7,
       capacity: 4,
       price: '120.000đ',
-      image: 'https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1974&q=80'
+      image: 'https://tennissaigon.com/wp-content/uploads/2021/08/san-tennis-quan-12.jpg'
     },
     { 
       id: 4, 
@@ -66,7 +66,7 @@ function Courts() {
       rating: 4.6,
       capacity: 18,
       price: '180.000đ',
-      image: 'https://images.unsplash.com/photo-1562041105-79d357e2b9a5?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80'
+      image: 'https://imagevietnam.vnanet.vn//MediaUpload/Org/2023/08/08/38-14-56-15.jpg'
     },
     { 
       id: 5, 
@@ -76,17 +76,17 @@ function Courts() {
       rating: 4.4,
       capacity: 12,
       price: '100.000đ',
-      image: 'https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2007&q=80'
+      image: 'https://tinphatsports.vn/wp-content/uploads/2024/07/San-bong-chuyen-Vinhomes-Riverside-Long-Bien.jpg'
     },
     { 
       id: 6, 
-      name: 'Sân bóng đá trong nhà phía Nam',
+      name: 'Sân Futsal Q2',
       type: 'soccer',
       location: 'Quận 2, TP.HCM',
       rating: 4.9,
       capacity: 14,
       price: '250.000đ',
-      image: 'https://images.unsplash.com/photo-1575361204480-aadea25e6e68?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2071&q=80'
+      image: 'https://static.tuoitre.vn/tto/i/s626/2017/04/06/futsalngoaitroi-1491471541.jpg'
     },
   ];
 
