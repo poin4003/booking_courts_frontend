@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/auth/AuthContext.jsx';
 import { Link } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 function LoginModal({ onClose }) {
   const [email, setEmail] = useState('pchuy4003@gmail.com');
@@ -9,9 +10,18 @@ function LoginModal({ onClose }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await login(email, password);
-    if (user) onClose();
+    const result = await login(email, password);
+  
+    if (!result?.success || !user) {
+      toast.success('Đăng nhập thành công!');
+    }
   };
+
+  useEffect(() => {
+    if (user) {
+      onClose(); 
+    }
+  }, [user]);
 
   return (
     <div className="w-full">
