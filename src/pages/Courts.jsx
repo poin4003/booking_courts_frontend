@@ -55,7 +55,7 @@ function Courts() {
       location: 'Quận 12, TP.HCM',
       rating: 4.7,
       capacity: 4,
-      price: '120.000đ',
+      price: '250.000đ',
       image: 'https://tennissaigon.com/wp-content/uploads/2021/08/san-tennis-quan-12.jpg'
     },
     { 

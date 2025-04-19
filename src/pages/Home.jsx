@@ -199,7 +199,7 @@ function Home() {
             <div className="bg-white rounded-lg shadow-md overflow-hidden transition-all hover:shadow-lg">
               <div className="relative h-48">
                 <img
-                  src="https://images.unsplash.com/photo-1520473378652-85d9c4aee6cf?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2069&q=80"
+                  src="https://images2.thanhnien.vn/zoom/700_438/Uploaded/lanphuong/2022_12_24/san-my-dinh-mat-co-1-truoc-tran-ma-aff-cup-2022-2412-2560.jpg"
                   alt="Sân bóng đá trung tâm"
                   className="w-full h-full object-cover"
                 />
@@ -209,7 +209,7 @@ function Home() {
               </div>
               <div className="p-4">
                 <div className="flex justify-between items-start">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-1">Sân bóng đá trung tâm</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-1">Sân bóng đá Mỹ Đình</h3>
                   <div className="flex items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-yellow-400 fill-current" viewBox="0 0 20 20" fill="currentColor">
                       <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
@@ -231,7 +231,7 @@ function Home() {
                   <span>Tối đa 22 người chơi</span>
                 </div>
                 <div className="flex justify-between items-center mt-4">
-                  <div className="text-emerald-600 font-semibold">200.000đ/giờ</div>
+                  <div className="text-emerald-600 font-semibold">2.000.000đ/giờ</div>
                   <button className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors text-sm">
                     Đặt ngay
                   </button>
@@ -243,7 +243,7 @@ function Home() {
             <div className="bg-white rounded-lg shadow-md overflow-hidden transition-all hover:shadow-lg">
               <div className="relative h-48">
                 <img
-                  src="https://images.unsplash.com/photo-1505666287802-931dc83a5dc9?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2069&q=80"
+                  src="https://hutisport.vn/wp-content/uploads/2024/03/san-bong-ro-o-tphcm.png"
                   alt="Sân bóng rổ phía Tây"
                   className="w-full h-full object-cover"
                 />
@@ -253,7 +253,7 @@ function Home() {
               </div>
               <div className="p-4">
                 <div className="flex justify-between items-start">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-1">Sân bóng rổ phía Tây</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-1">Sân bóng rổ Phú Thọ</h3>
                   <div className="flex items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-yellow-400 fill-current" viewBox="0 0 20 20" fill="currentColor">
                       <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
@@ -266,7 +266,7 @@ function Home() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
-                  <span>Quận 7, TP.HCM</span>
+                  <span>Quận 11, TP.HCM</span>
                 </div>
                 <div className="flex items-center text-sm text-gray-500 mb-3">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -275,7 +275,7 @@ function Home() {
                   <span>Tối đa 10 người chơi</span>
                 </div>
                 <div className="flex justify-between items-center mt-4">
-                  <div className="text-emerald-600 font-semibold">150.000đ/giờ</div>
+                  <div className="text-emerald-600 font-semibold">300.000đ/giờ</div>
                   <button className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors text-sm">
                     Đặt ngay
                   </button>
@@ -287,7 +287,7 @@ function Home() {
             <div className="bg-white rounded-lg shadow-md overflow-hidden transition-all hover:shadow-lg">
               <div className="relative h-48">
                 <img
-                  src="https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1974&q=80"
+                  src="https://tennissaigon.com/wp-content/uploads/2021/08/san-tennis-quan-12.jpg"
                   alt="Sân Tennis Riverside"
                   className="w-full h-full object-cover"
                 />
@@ -310,7 +310,7 @@ function Home() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
-                  <span>Quận Tây Hồ, Hà Nội</span>
+                  <span>Quận 12, TP.HCM</span>
                 </div>
                 <div className="flex items-center text-sm text-gray-500 mb-3">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
