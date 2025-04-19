@@ -1,5 +1,11 @@
-export class CourtModel {
+// import client from '../../client';
+// import { ApiPath } from '../../ApiPath';
+
+export class CourtRepo {
+  // Ví dụ: Nếu có API /courts
   async getCourts() {
+    // return client.get(ApiPath.COURTS);
+    // Hiện dùng mock data
     return new Promise((resolve) =>
       setTimeout(
         () =>
@@ -13,8 +19,11 @@ export class CourtModel {
   }
 
   async addCourt(court) {
+    // return client.post(ApiPath.COURTS, court);
     return new Promise((resolve) =>
       setTimeout(() => resolve({ id: Date.now(), ...court }), 500),
     );
   }
 }
+
+export const courtRepo = new CourtRepo();

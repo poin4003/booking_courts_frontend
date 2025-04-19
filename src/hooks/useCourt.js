@@ -1,17 +1,15 @@
 import { useState, useCallback } from 'react';
-import { CourtModel } from '../models/CourtModel';
+import { courtRepo } from '../api/features/CourtRepo';
 
 export function useCourt() {
   const [courts, setCourts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const courtModel = new CourtModel();
-
   const fetchCourts = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await courtModel.getCourts();
+      const data = await courtRepo.getCourts();
       setCourts(data);
     } catch (err) {
       setError(err.message);
@@ -23,7 +21,7 @@ export function useCourt() {
   const addCourt = useCallback(async (name, location) => {
     try {
       setLoading(true);
-      const newCourt = await courtModel.addCourt({ name, location });
+      const newCourt = await courtRepo.addCourt({ name, location });
       setCourts((prev) => [...prev, newCourt]);
     } catch (err) {
       setError(err.message);
