@@ -1,4 +1,4 @@
-const dev = {
+const development = {
   app: {
     main_api: import.meta.env.VITE_MAIN_API_ENDPOINT || 'http://localhost:3055',
   },
@@ -10,8 +10,8 @@ const prod = {
   },
 };
 
-const config = { dev, prod };
-const env = import.meta.env.NODE_ENV || 'dev';
+const config = { development, prod };
+const env = import.meta.env.NODE_ENV || 'development';
 
 console.log('Config:', config[env]);
 
