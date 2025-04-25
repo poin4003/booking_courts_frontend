@@ -6,7 +6,6 @@ function Courts() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeType, setActiveType] = useState('all');
-  // Thêm state để theo dõi ảnh đang hiển thị cho mỗi sân
   const [currentImageIndex, setCurrentImageIndex] = useState({});
 
   useEffect(() => {
@@ -19,7 +18,6 @@ function Courts() {
       const response = await courtRepo.getCourts();
       const courtsData = response.metadata || [];
       
-      // Khởi tạo currentImageIndex cho mỗi sân
       const imageIndexMap = {};
       courtsData.forEach(court => {
         imageIndexMap[court._id] = 0;
@@ -36,7 +34,6 @@ function Courts() {
     }
   };
 
-  // Hàm chuyển ảnh tiếp theo
   const nextImage = (courtId, imagesLength) => {
     setCurrentImageIndex(prev => ({
       ...prev,
@@ -44,7 +41,6 @@ function Courts() {
     }));
   };
 
-  // Hàm chuyển ảnh trước đó
   const prevImage = (courtId, imagesLength) => {
     setCurrentImageIndex(prev => ({
       ...prev,
@@ -52,7 +48,6 @@ function Courts() {
     }));
   };
 
-  // Hàm chuyển đến ảnh cụ thể
   const goToImage = (courtId, index) => {
     setCurrentImageIndex(prev => ({
       ...prev,
