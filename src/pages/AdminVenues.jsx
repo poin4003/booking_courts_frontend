@@ -57,6 +57,8 @@ function AdminVenues() {
     slots: [],
     deals: []
   });
+  const [newSportType, setNewSportType] = useState('');
+  const [newAmenity, setNewAmenity] = useState('');
 
   const [newSlot, setNewSlot] = useState({
     date: '',
@@ -157,29 +159,49 @@ function AdminVenues() {
     });
   };
 
-  const handleSportTypesChange = (e) => {
-    const value = e.target.value;
-    const sportTypes = value
-      .split(/[,\s]+/) 
-      .map(type => type.trim()) 
-      .filter(type => type !== ''); 
+  const addSportType = () => {
+    if (!newSportType) {
+      toast.error('Vui lòng nhập loại sân');
+      return;
+    }
     
     setFormData({
       ...formData,
-      sport_types: sportTypes,
+      sport_types: [...formData.sport_types, newSportType]
+    });
+    
+    setNewSportType('');
+  };
+  
+  const removeSportType = (index) => {
+    const updatedSportTypes = [...formData.sport_types];
+    updatedSportTypes.splice(index, 1);
+    setFormData({
+      ...formData,
+      sport_types: updatedSportTypes
     });
   };
   
-  const handleAmenitiesChange = (e) => {
-    const value = e.target.value;
-    const amenities = value
-      .split(/[,\s]+/)
-      .map(item => item.trim())
-      .filter(item => item !== '');
+  const addAmenity = () => {
+    if (!newAmenity) {
+      toast.error('Vui lòng nhập tiện ích');
+      return;
+    }
     
     setFormData({
       ...formData,
-      amenities: amenities,
+      amenities: [...formData.amenities, newAmenity]
+    });
+    
+    setNewAmenity('');
+  };
+  
+  const removeAmenity = (index) => {
+    const updatedAmenities = [...formData.amenities];
+    updatedAmenities.splice(index, 1);
+    setFormData({
+      ...formData,
+      amenities: updatedAmenities
     });
   };
 
@@ -492,30 +514,83 @@ function AdminVenues() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Loại sân</label>
-                  <input
-                    type="text"
-                    value={formData.sport_types.join(', ')}
-                    onChange={handleSportTypesChange}
-                    className="w-full border border-gray-300 p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                    placeholder="football, basketball, tennis"
-                  />
-                  <p className="mt-1 text-xs text-gray-500">
-                    Nhập các loại sân, phân cách bằng dấu phẩy hoặc khoảng trắng
-                  </p>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="text"
+                      value={newSportType}
+                      onChange={(e) => setNewSportType(e.target.value)}
+                      className="flex-1 border border-gray-300 p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      placeholder="Nhập loại sân"
+                    />
+                    <button
+                      type="button"
+                      onClick={addSportType}
+                      className="px-3 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors"
+                    >
+                      Thêm
+                    </button>
+                  </div>
+                  
+                  {formData.sport_types.length > 0 && (
+                    <div className="mt-2 space-y-2">
+                      <p className="text-sm font-medium text-gray-700">Danh sách loại sân:</p>
+                      <div className="max-h-32 overflow-y-auto border border-gray-200 rounded-md p-2">
+                        {formData.sport_types.map((type, index) => (
+                          <div key={index} className="flex items-center justify-between py-1 border-b border-gray-200">
+                            <div className="text-sm">{type}</div>
+                            <button
+                              type="button"
+                              onClick={() => removeSportType(index)}
+                              className="text-red-600 hover:text-red-900"
+                            >
+                              Xóa
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
+                {/* Phần quản lý tiện ích */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Tiện ích</label>
-                  <input
-                    type="text"
-                    value={formData.amenities.join(', ')}
-                    onChange={handleAmenitiesChange}
-                    className="w-full border border-gray-300 p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                    placeholder="parking, shower, locker"
-                  />
-                  <p className="mt-1 text-xs text-gray-500">
-                    Nhập các tiện ích, phân cách bằng dấu phẩy hoặc khoảng trắng
-                  </p>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="text"
+                      value={newAmenity}
+                      onChange={(e) => setNewAmenity(e.target.value)}
+                      className="flex-1 border border-gray-300 p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      placeholder="Nhập tiện ích"
+                    />
+                    <button
+                      type="button"
+                      onClick={addAmenity}
+                      className="px-3 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors"
+                    >
+                      Thêm
+                    </button>
+                  </div>
+                  
+                  {formData.amenities.length > 0 && (
+                    <div className="mt-2 space-y-2">
+                      <p className="text-sm font-medium text-gray-700">Danh sách tiện ích:</p>
+                      <div className="max-h-32 overflow-y-auto border border-gray-200 rounded-md p-2">
+                        {formData.amenities.map((amenity, index) => (
+                          <div key={index} className="flex items-center justify-between py-1 border-b border-gray-200">
+                            <div className="text-sm">{amenity}</div>
+                            <button
+                              type="button"
+                              onClick={() => removeAmenity(index)}
+                              className="text-red-600 hover:text-red-900"
+                            >
+                              Xóa
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
