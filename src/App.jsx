@@ -53,8 +53,8 @@ function App() {
   };
 
   const AdminLink = () => {
-    const { user } = useAuth();
-    if (user && user.role && user.role.includes('ADMIN')) {
+    // const { user } = useAuth();
+    // if (user && user.role && user.role.includes('ADMIN')) {
       return (
         <Link 
           to="/admin/venues" 
@@ -67,8 +67,8 @@ function App() {
           Quản lý
         </Link>
       );
-    }
-    return null;
+    // }
+    // return null;
   };
 
   return (

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { courtRepo } from '../api/features/CourtRepo';
-import { useAuth } from '../context/auth/AuthContext';
-import { useNavigate } from 'react-router-dom';
+// import { useAuth } from '../context/auth/AuthContext';
+// import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -38,8 +38,8 @@ function LocationMarker({ position, setPosition, formData, setFormData }) {
 }
 
 function AdminVenues() {
-  const { user } = useAuth();
-  const navigate = useNavigate();
+  // const { user } = useAuth();
+  // const navigate = useNavigate();
   const [venues, setVenues] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -71,12 +71,12 @@ function AdminVenues() {
   
   const [newDeal, setNewDeal] = useState('');
 
-  useEffect(() => {
-    if (!user || !user.role || !user.role.includes('ADMIN')) {
-      navigate('/');
-      toast.error('Bạn không có quyền truy cập trang này');
-    }
-  }, [user, navigate]);
+  // useEffect(() => {
+  //   if (!user || !user.role || !user.role.includes('ADMIN')) {
+  //     navigate('/');
+  //     toast.error('Bạn không có quyền truy cập trang này');
+  //   }
+  // }, [user, navigate]);
 
   useEffect(() => {
     fetchVenues();
