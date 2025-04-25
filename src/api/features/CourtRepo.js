@@ -1,28 +1,25 @@
-// import client from '../../client';
-// import { ApiPath } from '../../ApiPath';
+import client from "../client";
+import { ApiPath } from "../ApiPath";
 
 export class CourtRepo {
-  // Ví dụ: Nếu có API /courts
   async getCourts() {
-    // return client.get(ApiPath.COURTS);
-    // Hiện dùng mock data
-    return new Promise((resolve) =>
-      setTimeout(
-        () =>
-          resolve([
-            { id: 1, name: 'Sân Tennis A', location: 'Hà Nội' },
-            { id: 2, name: 'Sân Bóng Rổ B', location: 'TP.HCM' },
-          ]),
-        500,
-      ),
-    );
+    return client.get(ApiPath.GETALLCOURT);
   }
 
-  async addCourt(court) {
-    // return client.post(ApiPath.COURTS, court);
-    return new Promise((resolve) =>
-      setTimeout(() => resolve({ id: Date.now(), ...court }), 500),
-    );
+  async getCourtById(id) {
+    return client.get(`${ApiPath.GETCOURT}${id}`);
+  }
+
+  async addCourt(courtData) {
+    return client.post(ApiPath.ADDCOURT, courtData);
+  }
+
+  async updateCourt(id, courtData) {
+    return client.put(`${ApiPath.UPDATECOURT}${id}`, courtData);
+  }
+
+  async deleteCourt(id) {
+    return client.delete(`${ApiPath.DELETECOURT}${id}`);
   }
 }
 

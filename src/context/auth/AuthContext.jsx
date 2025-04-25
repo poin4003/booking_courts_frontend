@@ -16,9 +16,10 @@ export function AuthProvider({ children }) {
     try {
       setLoading(true);
       const response = await authRepo.login(email, password);
-      setUser(response.metadata.user);
+      const userData = response.metadata.user;
+      setUser(userData);
       setToken(response.metadata.token);
-      localStorage.setItem('user', JSON.stringify(response.metadata.user));
+      localStorage.setItem('user', JSON.stringify(userData));
       localStorage.setItem('token', response.metadata.token);
       setError(null);
       return response;
