@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios from "axios";
 
 const api = axios.create({
   timeout: 60000,
@@ -6,29 +6,29 @@ const api = axios.create({
 
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`;
+      config.headers["Authorization"] = `Bearer ${token}`;
     }
     return config;
   },
   (error) => {
-    console.error('Request error:', error);
+    console.error("Request error:", error);
     return Promise.reject(error);
-  },
+  }
 );
 
 api.interceptors.response.use(
   (response) => response.data,
   (error) => {
-    console.error('Response error:', error);
+    console.error("Response error:", error);
     if (error?.response?.status === 401 || error?.response?.status === 403) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      window.location.href = "/login";
     }
     return Promise.reject(error.response?.data || error);
-  },
+  }
 );
 
 class AxiosClient {
@@ -46,6 +46,10 @@ class AxiosClient {
 
   async patch(url, data = {}, config = {}) {
     return api.patch(url, data, config);
+  }
+
+  async put(url, data = {}, config = {}) {
+    return api.put(url, data, config);
   }
 }
 

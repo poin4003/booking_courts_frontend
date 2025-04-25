@@ -6,11 +6,11 @@ export const ApiPath = {
   SIGNUP: getApiPath("user/signup"),
 
   //Venue
-  ADDCOURT: getApiPath("venue/create"),
-  GETALLCOURT: getApiPath("venue/getAll"),
+  ADDCOURT: getApiPath("venue"),
+  GETALLCOURT: getApiPath("venue"),
   GETCOURT: getApiPath("venue/"),
   UPDATECOURT: getApiPath("venue/"),
-  DELETECOURT: getApiPath("venue/delete/"),
+  DELETECOURT: getApiPath("venue/"),
 };
 
 function getApiPath(path) {

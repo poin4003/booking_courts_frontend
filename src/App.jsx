@@ -6,9 +6,8 @@ import Home from './pages/Home';
 import Courts from './pages/Courts';
 import LoginModal from './pages/Login';
 import SignupModal from './pages/Signup';
-import AdminVenues from './pages/AdminVenues'; // Import trang AdminVenues
+import AdminVenues from './pages/AdminVenues';
 
-// Component bảo vệ route Admin
 const AdminRoute = ({ children }) => {
   const { user } = useAuth();
   
