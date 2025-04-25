@@ -9,11 +9,11 @@ import SignupModal from './pages/Signup';
 import AdminVenues from './pages/AdminVenues';
 
 const AdminRoute = ({ children }) => {
-  const { user } = useAuth();
+  // const { user } = useAuth();
   
-  if (!user || !user.role || !user.role.includes('ADMIN')) {
-    return <Navigate to="/" replace />;
-  }
+  // if (!user || !user.role || !user.role.includes('ADMIN')) {
+  //   return <Navigate to="/" replace />;
+  // }
   
   return children;
 };
@@ -79,9 +79,11 @@ function App() {
         <header className="bg-emerald-700 text-white shadow-md">
           <nav className="container mx-auto flex justify-between items-center py-4 px-6">
             <div className="flex items-center space-x-8">
-              <h1 className="text-2xl font-bold tracking-wide">Booking Courts</h1>
+              <Link to="/">
+                <h1 className="text-2xl font-bold tracking-wide cursor-pointer">Booking Courts</h1>
+              </Link>
               <div className="space-x-6 text-sm font-medium">
-                <Link to="/" className="hover:underline hover:text-emerald-100">Trang chủ</Link>
+                {/* Bỏ Link "Trang chủ" */}
                 <Link to="/courts" className="hover:underline hover:text-emerald-100">Sân</Link>
                 <AdminLink />
               </div>
