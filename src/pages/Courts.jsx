@@ -1,98 +1,76 @@
 import React, { useEffect, useState } from 'react';
-import { useCourt } from '../hooks/useCourt';
+import { courtRepo } from '../api/features/CourtRepo';
 
 function Courts() {
-  const { courts, loading, error, fetchCourts, addCourt } = useCourt();
-  const [name, setName] = useState('');
-  const [location, setLocation] = useState('');
+  const [courts, setCourts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [activeType, setActiveType] = useState('all');
+  // Thêm state để theo dõi ảnh đang hiển thị cho mỗi sân
+  const [currentImageIndex, setCurrentImageIndex] = useState({});
 
   useEffect(() => {
     fetchCourts();
-  }, [fetchCourts]);
+  }, []);
 
-  const handleAddCourt = (e) => {
-    e.preventDefault();
-    addCourt(name, location);
-    setName('');
-    setLocation('');
+  const fetchCourts = async () => {
+    try {
+      setLoading(true);
+      const response = await courtRepo.getCourts();
+      const courtsData = response.metadata || [];
+      
+      // Khởi tạo currentImageIndex cho mỗi sân
+      const imageIndexMap = {};
+      courtsData.forEach(court => {
+        imageIndexMap[court._id] = 0;
+      });
+      setCurrentImageIndex(imageIndexMap);
+      
+      setCourts(courtsData);
+      setError(null);
+    } catch (err) {
+      console.error('Error fetching courts:', err);
+      setError('Không thể tải danh sách sân. Vui lòng thử lại sau.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Hàm chuyển ảnh tiếp theo
+  const nextImage = (courtId, imagesLength) => {
+    setCurrentImageIndex(prev => ({
+      ...prev,
+      [courtId]: (prev[courtId] + 1) % imagesLength
+    }));
+  };
+
+  // Hàm chuyển ảnh trước đó
+  const prevImage = (courtId, imagesLength) => {
+    setCurrentImageIndex(prev => ({
+      ...prev,
+      [courtId]: (prev[courtId] - 1 + imagesLength) % imagesLength
+    }));
+  };
+
+  // Hàm chuyển đến ảnh cụ thể
+  const goToImage = (courtId, index) => {
+    setCurrentImageIndex(prev => ({
+      ...prev,
+      [courtId]: index
+    }));
   };
 
   const courtTypes = [
     { id: 'all', label: 'Tất cả' },
-    { id: 'soccer', label: 'Bóng đá' },
+    { id: 'football', label: 'Bóng đá' },
     { id: 'basketball', label: 'Bóng rổ' },
     { id: 'tennis', label: 'Tennis' },
-    { id: 'baseball', label: 'Bóng chày' },
     { id: 'volleyball', label: 'Bóng chuyền' },
   ];
 
-  const mockCourts = [
-    { 
-      id: 1, 
-      name: 'Sân bóng đá Mỹ Đình',
-      type: 'soccer',
-      location: 'Quận Hoàn Kiếm, Hà Nội',
-      rating: 4.8,
-      capacity: 22,
-      price: '2.000.000đ',
-      image: 'https://images2.thanhnien.vn/zoom/700_438/Uploaded/lanphuong/2022_12_24/san-my-dinh-mat-co-1-truoc-tran-ma-aff-cup-2022-2412-2560.jpg'
-    },
-    { 
-      id: 2, 
-      name: 'Sân bóng rổ Phú Thọ',
-      type: 'basketball',
-      location: 'Quận 11, TP.HCM',
-      rating: 4.5,
-      capacity: 10,
-      price: '300.000đ',
-      image: 'https://hutisport.vn/wp-content/uploads/2024/03/san-bong-ro-o-tphcm.png'
-    },
-    { 
-      id: 3, 
-      name: 'Sân Tennis Riverside',
-      type: 'tennis',
-      location: 'Quận 12, TP.HCM',
-      rating: 4.7,
-      capacity: 4,
-      price: '250.000đ',
-      image: 'https://tennissaigon.com/wp-content/uploads/2021/08/san-tennis-quan-12.jpg'
-    },
-    { 
-      id: 4, 
-      name: 'Sân bóng chày Đông Đô',
-      type: 'baseball',
-      location: 'Quận Long Biên, Hà Nội',
-      rating: 4.6,
-      capacity: 18,
-      price: '180.000đ',
-      image: 'https://imagevietnam.vnanet.vn//MediaUpload/Org/2023/08/08/38-14-56-15.jpg'
-    },
-    { 
-      id: 5, 
-      name: 'Sân bóng chuyền Bắc Từ Liêm',
-      type: 'volleyball',
-      location: 'Quận Bắc Từ Liêm, Hà Nội',
-      rating: 4.4,
-      capacity: 12,
-      price: '100.000đ',
-      image: 'https://tinphatsports.vn/wp-content/uploads/2024/07/San-bong-chuyen-Vinhomes-Riverside-Long-Bien.jpg'
-    },
-    { 
-      id: 6, 
-      name: 'Sân Futsal Q2',
-      type: 'soccer',
-      location: 'Quận 2, TP.HCM',
-      rating: 4.9,
-      capacity: 14,
-      price: '250.000đ',
-      image: 'https://static.tuoitre.vn/tto/i/s626/2017/04/06/futsalngoaitroi-1491471541.jpg'
-    },
-  ];
-
   const displayCourts = activeType === 'all' 
-    ? mockCourts 
-    : mockCourts.filter(court => court.type === activeType);
+    ? courts 
+    : courts.filter(court => court.sport_types && court.sport_types.includes(activeType));
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
@@ -186,46 +164,143 @@ function Courts() {
 
       {/* Courts Grid */}
       <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {loading && <p className="text-gray-500 text-center col-span-3">Đang tải...</p>}
-        {error && <p className="text-red-500 text-center col-span-3">{error}</p>}
+        {loading && (
+          <div className="col-span-3 flex justify-center py-10">
+            <svg className="animate-spin -ml-1 mr-3 h-10 w-10 text-emerald-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span className="text-lg text-gray-600">Đang tải dữ liệu...</span>
+          </div>
+        )}
+        
+        {error && (
+          <div className="col-span-3 text-center py-10">
+            <div className="text-red-500 text-lg">{error}</div>
+            <button 
+              onClick={fetchCourts}
+              className="mt-4 px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700"
+            >
+              Thử lại
+            </button>
+          </div>
+        )}
 
-        {displayCourts.map((court) => (
-          <div key={court.id} className="bg-white rounded-lg shadow-md overflow-hidden transition-all hover:shadow-lg">
-            <div className="relative h-48">
-              <img
-                src={court.image}
-                alt={court.name}
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute top-0 right-0 bg-emerald-600 text-white px-2 py-1 m-2 text-xs font-bold rounded">
-                {courtTypes.find(type => type.id === court.type)?.label}
+        {!loading && !error && displayCourts.length === 0 && (
+          <div className="col-span-3 text-center py-10">
+            <p className="text-gray-500 text-lg">Không tìm thấy sân nào phù hợp với tiêu chí của bạn.</p>
+          </div>
+        )}
+
+        {!loading && !error && displayCourts.map((court) => (
+          <div key={court._id} className="bg-white rounded-lg shadow-md overflow-hidden transition-all hover:shadow-lg">
+            {/* Image Carousel */}
+            <div className="relative h-48 group">
+              {/* Hiển thị ảnh hiện tại với transition */}
+              <div className="h-full overflow-hidden">
+                {court.images && court.images.length > 0 ? (
+                  <img
+                    src={court.images[currentImageIndex[court._id]]}
+                    alt={court.name}
+                    className="w-full h-full object-cover transition-all duration-300 ease-in-out"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = 'https://via.placeholder.com/400x300?text=Lỗi+hình+ảnh';
+                    }}
+                  />
+                ) : (
+                  <img
+                    src="https://via.placeholder.com/400x300?text=Không+có+hình+ảnh"
+                    alt={court.name}
+                    className="w-full h-full object-cover"
+                  />
+                )}
               </div>
+              
+              {/* Nút điều hướng chỉ hiển thị khi có nhiều hơn 1 ảnh và khi hover */}
+              {court.images && court.images.length > 1 && (
+                <>
+                  {/* Nút Previous - ẩn mặc định, hiển thị khi hover */}
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      prevImage(court._id, court.images.length);
+                    }}
+                    className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-30 hover:bg-opacity-50 text-white rounded-full p-1 focus:outline-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                  </button>
+                  
+                  {/* Nút Next - ẩn mặc định, hiển thị khi hover */}
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      nextImage(court._id, court.images.length);
+                    }}
+                    className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-30 hover:bg-opacity-50 text-white rounded-full p-1 focus:outline-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                  
+                  {/* Indicator dots - luôn hiển thị */}
+                  <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-2">
+                    {court.images.map((_, index) => (
+                      <button
+                        key={index}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          goToImage(court._id, index);
+                        }}
+                        className={`h-2 w-2 rounded-full focus:outline-none transition-colors duration-200 ${
+                          index === currentImageIndex[court._id] ? 'bg-white' : 'bg-black bg-opacity-50'
+                        }`}
+                        aria-label={`Go to image ${index + 1}`}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
+              
+              {court.sport_types && court.sport_types.length > 0 && (
+                <div className="absolute top-0 right-0 bg-emerald-600 text-white px-2 py-1 m-2 text-xs font-bold rounded">
+                  {court.sport_types[0]}
+                </div>
+              )}
             </div>
+            
             <div className="p-4">
               <div className="flex justify-between items-start">
                 <h3 className="text-lg font-semibold text-gray-900 mb-1">{court.name}</h3>
-                <div className="flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-yellow-400 fill-current" viewBox="0 0 20 20" fill="currentColor">
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                  </svg>
-                  <span className="ml-1 text-sm text-gray-600">{court.rating}</span>
-                </div>
               </div>
               <div className="flex items-center text-sm text-gray-500 mb-2">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
-                <span>{court.location}</span>
+                <span>{court.address}</span>
               </div>
-              <div className="flex items-center text-sm text-gray-500 mb-3">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                </svg>
-                <span>Tối đa {court.capacity} người chơi</span>
-              </div>
+              {court.amenities && court.amenities.length > 0 && (
+                <div className="mb-3">
+                  <p className="text-sm text-gray-500 mb-1">Tiện ích:</p>
+                  <div className="flex flex-wrap gap-1">
+                    {court.amenities.map((amenity, index) => (
+                      <span key={index} className="inline-block bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded">
+                        {amenity}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
               <div className="flex justify-between items-center mt-4">
-                <div className="text-emerald-600 font-semibold">{court.price}/giờ</div>
+                <div className="text-emerald-600 font-semibold">
+                  {court.slots && court.slots.length > 0 
+                    ? `${new Intl.NumberFormat('vi-VN').format(court.slots[0].price)}đ/giờ`
+                    : 'Liên hệ để biết giá'}
+                </div>
                 <button
                   className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors text-sm"
                   onClick={() => alert(`Đặt sân: ${court.name}`)}
@@ -236,40 +311,6 @@ function Courts() {
             </div>
           </div>
         ))}
-      </div>
-
-      {/* Add Court Form */}
-      {/* Add this if you want admin functionality */}
-      <div className="mt-12">
-        <form onSubmit={handleAddCourt} className="max-w-lg mx-auto space-y-4 bg-white p-6 rounded-lg shadow-md">
-          <h3 className="text-lg font-semibold text-center">Thêm sân mới</h3>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Tên sân</label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full border border-gray-300 p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Địa điểm</label>
-            <input
-              type="text"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              className="w-full border border-gray-300 p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              required
-            />
-          </div>
-          <button
-            type="submit"
-            className="w-full bg-emerald-600 text-white p-2 rounded-md hover:bg-emerald-700 transition"
-          >
-            Thêm sân
-          </button>
-        </form>
       </div>
     </div>
   );
