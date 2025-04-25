@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { courtRepo } from '../api/features/CourtRepo';
-import { useAuth } from '../context/auth/AuthContext';
-import { useNavigate } from 'react-router-dom';
+// import { useAuth } from '../context/auth/AuthContext';
+// import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -38,8 +38,8 @@ function LocationMarker({ position, setPosition, formData, setFormData }) {
 }
 
 function AdminVenues() {
-  const { user } = useAuth();
-  const navigate = useNavigate();
+  // const { user } = useAuth();
+  // const navigate = useNavigate();
   const [venues, setVenues] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -57,6 +57,8 @@ function AdminVenues() {
     slots: [],
     deals: []
   });
+  const [newSportType, setNewSportType] = useState('');
+  const [newAmenity, setNewAmenity] = useState('');
 
   const [newSlot, setNewSlot] = useState({
     date: '',
@@ -69,12 +71,12 @@ function AdminVenues() {
   
   const [newDeal, setNewDeal] = useState('');
 
-  useEffect(() => {
-    if (!user || !user.role || !user.role.includes('ADMIN')) {
-      navigate('/');
-      toast.error('Bạn không có quyền truy cập trang này');
-    }
-  }, [user, navigate]);
+  // useEffect(() => {
+  //   if (!user || !user.role || !user.role.includes('ADMIN')) {
+  //     navigate('/');
+  //     toast.error('Bạn không có quyền truy cập trang này');
+  //   }
+  // }, [user, navigate]);
 
   useEffect(() => {
     fetchVenues();
@@ -157,21 +159,49 @@ function AdminVenues() {
     });
   };
 
-  const handleSportTypesChange = (e) => {
-    const value = e.target.value;
-    const sportTypes = value.split(' ').filter(type => type.trim() !== '');
+  const addSportType = () => {
+    if (!newSportType) {
+      toast.error('Vui lòng nhập loại sân');
+      return;
+    }
+    
     setFormData({
       ...formData,
-      sport_types: sportTypes,
+      sport_types: [...formData.sport_types, newSportType]
+    });
+    
+    setNewSportType('');
+  };
+  
+  const removeSportType = (index) => {
+    const updatedSportTypes = [...formData.sport_types];
+    updatedSportTypes.splice(index, 1);
+    setFormData({
+      ...formData,
+      sport_types: updatedSportTypes
     });
   };
-
-  const handleAmenitiesChange = (e) => {
-    const value = e.target.value;
-    const amenities = value.split(' ').filter(item => item.trim() !== '');
+  
+  const addAmenity = () => {
+    if (!newAmenity) {
+      toast.error('Vui lòng nhập tiện ích');
+      return;
+    }
+    
     setFormData({
       ...formData,
-      amenities: amenities,
+      amenities: [...formData.amenities, newAmenity]
+    });
+    
+    setNewAmenity('');
+  };
+  
+  const removeAmenity = (index) => {
+    const updatedAmenities = [...formData.amenities];
+    updatedAmenities.splice(index, 1);
+    setFormData({
+      ...formData,
+      amenities: updatedAmenities
     });
   };
 
@@ -314,17 +344,17 @@ function AdminVenues() {
       </div>
 
       <div className="mt-8 flex justify-end">
-        <button
-          onClick={openAddModal}
-          className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors"
-        >
-          <div className="flex items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            Thêm sân mới
-          </div>
-        </button>
+      <button
+        onClick={openAddModal}
+        className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors cursor-pointer"
+      >
+        <div className="flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
+          Thêm sân mới
+        </div>
+      </button>
       </div>
 
       {loading && <p className="text-center mt-8">Đang tải...</p>}
@@ -339,6 +369,7 @@ function AdminVenues() {
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Địa chỉ</th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Số điện thoại</th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Loại sân</th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tiện ích</th>
               <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Thao tác</th>
             </tr>
           </thead>
@@ -357,22 +388,27 @@ function AdminVenues() {
                   </td>
                   <td className="px-6 py-4">
                     <div className="text-sm text-gray-500">
-                      {venue.sport_types && venue.sport_types.join(' ')}
+                      {venue.sport_types && venue.sport_types.join(', ')}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="text-sm text-gray-500">
+                      {venue.amenities && venue.amenities.join(', ')}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                    <button
-                      onClick={() => openEditModal(venue)}
-                      className="text-emerald-600 hover:text-emerald-900 mr-4"
-                    >
-                      Sửa
-                    </button>
-                    <button
-                      onClick={() => handleDelete(venue._id)}
-                      className="text-red-600 hover:text-red-900"
-                    >
-                      Xóa
-                    </button>
+                  <button
+                    onClick={() => openEditModal(venue)}
+                    className="text-emerald-600 hover:text-emerald-900 mr-4 cursor-pointer"
+                  >
+                    Sửa
+                  </button>
+                  <button
+                    onClick={() => handleDelete(venue._id)}
+                    className="text-red-600 hover:text-red-900 cursor-pointer"
+                  >
+                    Xóa
+                  </button>
                   </td>
                 </tr>
               ))
@@ -477,25 +513,84 @@ function AdminVenues() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Loại sân (phân cách bằng dấu cách)</label>
-                  <input
-                    type="text"
-                    value={formData.sport_types.join(' ')}
-                    onChange={handleSportTypesChange}
-                    className="w-full border border-gray-300 p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                    placeholder="football basketball tennis"
-                  />
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Loại sân</label>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="text"
+                      value={newSportType}
+                      onChange={(e) => setNewSportType(e.target.value)}
+                      className="flex-1 border border-gray-300 p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      placeholder="Nhập loại sân"
+                    />
+                    <button
+                      type="button"
+                      onClick={addSportType}
+                      className="px-3 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors"
+                    >
+                      Thêm
+                    </button>
+                  </div>
+                  
+                  {formData.sport_types.length > 0 && (
+                    <div className="mt-2 space-y-2">
+                      <p className="text-sm font-medium text-gray-700">Danh sách loại sân:</p>
+                      <div className="max-h-32 overflow-y-auto border border-gray-200 rounded-md p-2">
+                        {formData.sport_types.map((type, index) => (
+                          <div key={index} className="flex items-center justify-between py-1 border-b border-gray-200">
+                            <div className="text-sm">{type}</div>
+                            <button
+                              type="button"
+                              onClick={() => removeSportType(index)}
+                              className="text-red-600 hover:text-red-900"
+                            >
+                              Xóa
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
+                {/* Phần quản lý tiện ích */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Tiện ích (phân cách bằng dấu cách)</label>
-                  <input
-                    type="text"
-                    value={formData.amenities.join(' ')}
-                    onChange={handleAmenitiesChange}
-                    className="w-full border border-gray-300 p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                    placeholder="parking shower locker"
-                  />
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Tiện ích</label>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="text"
+                      value={newAmenity}
+                      onChange={(e) => setNewAmenity(e.target.value)}
+                      className="flex-1 border border-gray-300 p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      placeholder="Nhập tiện ích"
+                    />
+                    <button
+                      type="button"
+                      onClick={addAmenity}
+                      className="px-3 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors"
+                    >
+                      Thêm
+                    </button>
+                  </div>
+                  
+                  {formData.amenities.length > 0 && (
+                    <div className="mt-2 space-y-2">
+                      <p className="text-sm font-medium text-gray-700">Danh sách tiện ích:</p>
+                      <div className="max-h-32 overflow-y-auto border border-gray-200 rounded-md p-2">
+                        {formData.amenities.map((amenity, index) => (
+                          <div key={index} className="flex items-center justify-between py-1 border-b border-gray-200">
+                            <div className="text-sm">{amenity}</div>
+                            <button
+                              type="button"
+                              onClick={() => removeAmenity(index)}
+                              className="text-red-600 hover:text-red-900"
+                            >
+                              Xóa
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -529,7 +624,7 @@ function AdminVenues() {
                           <button
                             type="button"
                             onClick={() => removeImage(index)}
-                            className="text-red-600 hover:text-red-900"
+                            className="text-red-600 hover:text-red-900 cursor-pointer"
                           >
                             Xóa
                           </button>
@@ -584,7 +679,7 @@ function AdminVenues() {
                     <button
                       type="button"
                       onClick={addSlot}
-                      className="px-3 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors"
+                      className="px-3 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors cursor-pointer"
                     >
                       Thêm
                     </button>
@@ -655,7 +750,7 @@ function AdminVenues() {
                   <button
                     type="button"
                     onClick={addDeal}
-                    className="px-3 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors"
+                    className="px-3 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors cursor-pointer"
                   >
                     Thêm
                   </button>
@@ -686,14 +781,14 @@ function AdminVenues() {
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 border border-gray-300 bg-white text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+                  className="px-4 py-2 border border-gray-300 bg-white text-gray-700 rounded-md hover:bg-gray-50 transition-colors cursor-pointer"
                 >
                   Hủy
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors disabled:bg-emerald-400"
+                  className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors disabled:bg-emerald-400 cursor-pointer" 
                 >
                   {loading ? 'Đang lưu...' : 'Lưu'}
                 </button>

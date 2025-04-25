@@ -1,9 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../context/auth/AuthContext';
+// import { useAuth } from '../context/auth/AuthContext';
 
 function Home() {
-  const { user } = useAuth();
+  // const { user } = useAuth();
 
   return (
     <div>
@@ -19,7 +19,7 @@ function Home() {
         </div>
         
         {/* Hiển thị button Admin nếu người dùng có vai trò ADMIN */}
-        {user && user.role && user.role.includes('ADMIN') && (
+        {/* {user && user.role && user.role.includes('ADMIN') && ( */}
           <div className="absolute top-4 right-4 z-10">
             <Link
               to="/admin/venues"
@@ -32,7 +32,7 @@ function Home() {
               Quản lý sân
             </Link>
           </div>
-        )}
+        {/* )} */}
         
         <div className="relative max-w-7xl mx-auto py-24 px-4 sm:py-32 sm:px-6 lg:px-8">
           <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl">
