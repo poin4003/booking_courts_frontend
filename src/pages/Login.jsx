@@ -109,7 +109,7 @@ function LoginModal({ onClose }) {
           )}
         </button>
       </form>
-
+{/* 
       <div className="mt-6">
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
@@ -143,7 +143,7 @@ function LoginModal({ onClose }) {
             </a>
           </div>
         </div>
-      </div>
+      </div> */}
 
       <p className="mt-6 text-center text-sm text-gray-600">
         Chưa có tài khoản?{' '}
@@ -152,7 +152,7 @@ function LoginModal({ onClose }) {
           onClick={(e) => {
             e.preventDefault();
             onClose();
-            document.querySelector('button[onClick="() => setSignupModalOpen(true)"]')?.click();
+            document.dispatchEvent(new CustomEvent('openSignupModal'));
           }}
           className="font-medium text-emerald-600 hover:text-emerald-500"
         >
