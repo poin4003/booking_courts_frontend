@@ -1,5 +1,5 @@
-import client from '../client';
-import { ApiPath } from '../ApiPath';
+import client from "../client";
+import { ApiPath } from "../ApiPath";
 
 export class AuthRepo {
   async login(email, password) {
@@ -8,6 +8,10 @@ export class AuthRepo {
 
   async signup(name, email, phone, password) {
     return client.post(ApiPath.SIGNUP, { name, email, phone, password });
+  }
+
+  async getCurrentUser() {
+    return client.get(ApiPath.CURRENT_USER);
   }
 }
 
