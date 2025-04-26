@@ -29,7 +29,7 @@ function App() {
         <span className="text-emerald-100">Xin chào, {user.name}</span>
         <button
           onClick={logout}
-          className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition"
+          className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition cursor-pointer"
         >
           Đăng xuất
         </button>
@@ -38,13 +38,13 @@ function App() {
       <div className="space-x-4">
         <button
           onClick={() => setLoginModalOpen(true)}
-          className="bg-emerald-600 text-white px-4 py-2 rounded-md hover:bg-emerald-700 transition"
+          className="bg-emerald-600 text-white px-4 py-2 rounded-md hover:bg-emerald-700 transition cursor-pointer"
         >
           Đăng nhập
         </button>
         <button
           onClick={() => setSignupModalOpen(true)}
-          className="bg-emerald-600 text-white px-4 py-2 rounded-md hover:bg-emerald-700 transition"
+          className="bg-emerald-600 text-white px-4 py-2 rounded-md hover:bg-emerald-700 transition cursor-pointer"
         >
           Đăng ký
         </button>

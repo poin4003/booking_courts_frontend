@@ -150,7 +150,7 @@ function SignupModal({ onClose }) {
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-emerald-600 text-white p-3 rounded-md hover:bg-emerald-700 transition disabled:bg-emerald-400 font-medium mt-3"
+          className="w-full bg-emerald-600 text-white p-3 rounded-md hover:bg-emerald-700 transition disabled:bg-emerald-400 font-medium mt-3 cursor-pointer"
         >
           {loading ? (
             <div className="flex items-center justify-center">
