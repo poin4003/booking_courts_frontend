@@ -14,15 +14,15 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
-function LocationMarker({ position, setPosition, formData, setFormData }) {
+function LocationMarker({ position, setPosition, setFormData }) {
   const map = useMapEvents({
     click(e) {
       const { lat, lng } = e.latlng;
       setPosition([lat, lng]);
-      setFormData({
-        ...formData,
+      setFormData(prev => ({
+        ...prev,
         location: { lat, lng }
-      });
+      }));
     },
   });
 
@@ -294,6 +294,13 @@ function AdminVenues() {
       
       const dataToSend = {...formData};
       
+      if (dataToSend.location) {
+        dataToSend.location = {
+          lat: parseFloat(dataToSend.location.lat),
+          lng: parseFloat(dataToSend.location.lng)
+        };
+      }
+      
       if (dataToSend.slots && dataToSend.slots.length > 0) {
         dataToSend.slots = dataToSend.slots.map(slot => {
           const { _id, ...slotWithoutId } = slot;
@@ -302,9 +309,11 @@ function AdminVenues() {
       }
       
       if (selectedVenue) {
+        console.log('Updating venue:', selectedVenue._id, dataToSend);
         await courtRepo.updateCourt(selectedVenue._id, dataToSend);
         toast.success('Cập nhật sân thành công!');
       } else {
+        console.log('Adding new venue:', dataToSend);
         await courtRepo.addCourt(dataToSend);
         toast.success('Thêm sân mới thành công!');
       }

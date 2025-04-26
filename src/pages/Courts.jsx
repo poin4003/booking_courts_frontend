@@ -202,7 +202,7 @@ function Courts() {
                     : 'Liên hệ để biết giá'}
                 </div>
                 <button
-                  className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors text-sm"
+                  className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors text-sm cursor-pointer"
                   onClick={() => alert(`Đặt sân: ${court.name}`)}
                 >
                   Đặt ngay

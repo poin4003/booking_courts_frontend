@@ -74,13 +74,16 @@ function App() {
   useEffect(() => {
     const handleOpenSignup = () => setSignupModalOpen(true);
     const handleOpenLogin = () => setLoginModalOpen(true);
+    const handleAuthError = () => setLoginModalOpen(true);
     
     document.addEventListener('openSignupModal', handleOpenSignup);
     document.addEventListener('openLoginModal', handleOpenLogin);
+    document.addEventListener('authError', handleAuthError);
     
     return () => {
       document.removeEventListener('openSignupModal', handleOpenSignup);
       document.removeEventListener('openLoginModal', handleOpenLogin);
+      document.removeEventListener('authError', handleAuthError);
     };
   }, []);
 
@@ -96,7 +99,6 @@ function App() {
                 <h1 className="text-2xl font-bold tracking-wide cursor-pointer mr-8">Booking Courts</h1>
               </Link>
               <div className="flex items-center space-x-6 text-sm font-medium">
-                <Link to="/courts" className="hover:underline hover:text-emerald-100">Sân</Link>
                 <AdminLink />
               </div>
             </div>
