@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Link, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/auth/AuthContext.jsx';
 import { Toaster } from 'react-hot-toast';
@@ -70,6 +70,19 @@ function App() {
     // }
     // return null;
   };
+
+  useEffect(() => {
+    const handleOpenSignup = () => setSignupModalOpen(true);
+    const handleOpenLogin = () => setLoginModalOpen(true);
+    
+    document.addEventListener('openSignupModal', handleOpenSignup);
+    document.addEventListener('openLoginModal', handleOpenLogin);
+    
+    return () => {
+      document.removeEventListener('openSignupModal', handleOpenSignup);
+      document.removeEventListener('openLoginModal', handleOpenLogin);
+    };
+  }, []);
 
   return (
     <AuthProvider>

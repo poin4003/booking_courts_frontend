@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/auth/AuthContext.jsx';
 import { Link } from 'react-router-dom';
 
@@ -11,6 +11,12 @@ function SignupModal({ onClose }) {
   const [passwordError, setPasswordError] = useState('');
   const { signup, loading, error, user } = useAuth();
 
+  useEffect(() => {
+    if (user) {
+      onClose(); 
+    }
+  }, [user, onClose]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -21,7 +27,6 @@ function SignupModal({ onClose }) {
     
     setPasswordError('');
     await signup(name, email, phone, password);
-    if (user) onClose();
   };
 
   return (
@@ -167,7 +172,7 @@ function SignupModal({ onClose }) {
           onClick={(e) => {
             e.preventDefault();
             onClose();
-            document.querySelector('button[onClick="setLoginModalOpen(true)"]').click();
+            document.dispatchEvent(new CustomEvent('openLoginModal'));
           }}
           className="font-medium text-emerald-600 hover:text-emerald-500"
         >
