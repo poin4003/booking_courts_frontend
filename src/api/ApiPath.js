@@ -4,6 +4,7 @@ export const ApiPath = {
   // Auth
   LOGIN: getApiPath("user/login"),
   SIGNUP: getApiPath("user/signup"),
+  CURRENT_USER: getApiPath("user/current"),
 
   //Venue
   ADDCOURT: getApiPath("venue"),
