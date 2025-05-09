@@ -14,29 +14,6 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
-function LocationMarker({ position, setPosition, setFormData }) {
-  const map = useMapEvents({
-    click(e) {
-      const { lat, lng } = e.latlng;
-      setPosition([lat, lng]);
-      setFormData(prev => ({
-        ...prev,
-        location: { lat, lng }
-      }));
-    },
-  });
-
-  useEffect(() => {
-    if (position) {
-      map.flyTo(position, map.getZoom());
-    }
-  }, [position, map]);
-
-  return position ? 
-    <Marker position={position} /> 
-    : null;
-}
-
 function AdminVenues() {
   // const { user } = useAuth();
   // const navigate = useNavigate();
@@ -48,9 +25,16 @@ function AdminVenues() {
   const [markerPosition, setMarkerPosition] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
-    address: '',
     phone: '',
-    location: { lat: 0, lng: 0 },
+    location: {
+      type: 'Point',
+      coordinates: [106.6297, 10.8231], 
+      city: '',
+      district: '',
+      ward: '',
+      street: '',
+      full_address: ''
+    },
     sport_types: [],
     amenities: [],
     images: [],
@@ -59,7 +43,6 @@ function AdminVenues() {
   });
   const [newSportType, setNewSportType] = useState('');
   const [newAmenity, setNewAmenity] = useState('');
-
   const [newSlot, setNewSlot] = useState({
     date: '',
     time: '',
@@ -68,8 +51,242 @@ function AdminVenues() {
   });
 
   const [newImage, setNewImage] = useState('');
-  
   const [newDeal, setNewDeal] = useState('');
+
+  const [searchAddress, setSearchAddress] = useState('');
+  const [searchingAddress, setSearchingAddress] = useState(false);
+  const [loadingAddress, setLoadingAddress] = useState(false);
+  const [availableWards, setAvailableWards] = useState([]);
+
+  const hcmcDistricts = [
+    "Quận 1", "Quận 2", "Quận 3", "Quận 4", "Quận 5", "Quận 6", "Quận 7", 
+    "Quận 8", "Quận 9", "Quận 10", "Quận 11", "Quận 12", "Quận Bình Tân", 
+    "Quận Bình Thạnh", "Quận Gò Vấp", "Quận Phú Nhuận", "Quận Tân Bình", 
+    "Quận Tân Phú", "Quận Thủ Đức", "Huyện Bình Chánh", "Huyện Cần Giờ", 
+    "Huyện Củ Chi", "Huyện Hóc Môn", "Huyện Nhà Bè", "Thành phố Thủ Đức"
+  ];
+  
+  const wardsByDistrict = {
+    "Quận 1": ["Phường Bến Nghé", "Phường Bến Thành", "Phường Cầu Kho", "Phường Cầu Ông Lãnh", 
+              "Phường Cô Giang", "Phường Đa Kao", "Phường Nguyễn Cư Trinh", "Phường Nguyễn Thái Bình", 
+              "Phường Phạm Ngũ Lão", "Phường Tân Định"],
+    "Quận 2": ["Phường An Khánh", "Phường An Lợi Đông", "Phường An Phú", "Phường Bình An", 
+              "Phường Bình Khánh", "Phường Bình Trưng Đông", "Phường Bình Trưng Tây", 
+              "Phường Cát Lái", "Phường Thạnh Mỹ Lợi", "Phường Thảo Điền", "Phường Thủ Thiêm"],
+  };
+
+  const getAddressFromCoordinates = async (lat, lng) => {
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`
+      );
+      
+      if (!response.ok) {
+        throw new Error('Không thể lấy thông tin địa chỉ');
+      }
+      
+      const data = await response.json();
+      const address = data.address;
+      
+      const isInHCMC = 
+        address.city === 'Thành phố Hồ Chí Minh' ||
+        address.city === 'Ho Chi Minh City' ||
+        address.state === 'Thành phố Hồ Chí Minh' ||
+        address.state === 'Ho Chi Minh City';
+      
+      if (!isInHCMC) {
+        return { isInHCMC: false };
+      }
+      
+      const city = "Thành phố Hồ Chí Minh";
+      
+      let district = '';
+      if (address.suburb) {
+        district = address.suburb;
+      } else if (address.district) {
+        district = address.district;
+      } else if (address.county) {
+        district = address.county;
+      }
+      
+      const ward = address.neighbourhood || address.quarter || '';
+      
+      const street = address.road || '';
+      
+      const full_address = data.display_name || '';
+      
+      return {
+        isInHCMC: true,
+        city,
+        district,
+        ward,
+        street,
+        full_address
+      };
+    } catch (error) {
+      console.error('Error fetching address:', error);
+      toast.error('Không thể lấy thông tin địa chỉ từ tọa độ. Vui lòng nhập thủ công.');
+      return null;
+    }
+  };
+  
+  const searchLocationByAddress = async () => {
+    if (!searchAddress) return;
+    
+    try {
+      setSearchingAddress(true);
+      
+      const searchQuery = `${searchAddress}, Hồ Chí Minh, Việt Nam`;
+      
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&limit=1&addressdetails=1&countrycodes=vn`
+      );
+      
+      if (!response.ok) {
+        throw new Error('Không thể tìm kiếm địa chỉ');
+      }
+      
+      const data = await response.json();
+      
+      if (data && data.length > 0) {
+        const result = data[0];
+        
+        const address = result.address;
+        const isInHCMC = 
+          address.city === 'Thành phố Hồ Chí Minh' ||
+          address.city === 'Ho Chi Minh City' ||
+          address.state === 'Thành phố Hồ Chí Minh' ||
+          address.state === 'Ho Chi Minh City';
+        
+        if (!isInHCMC) {
+          toast.warning('Địa chỉ không thuộc TP. Hồ Chí Minh. Vui lòng chọn địa chỉ trong phạm vi TP.HCM.');
+          setSearchingAddress(false);
+          return;
+        }
+        
+        const lat = parseFloat(result.lat);
+        const lng = parseFloat(result.lon);
+        
+        setMarkerPosition([lat, lng]);
+        
+        const city = "Thành phố Hồ Chí Minh"; 
+        
+        let district = '';
+        if (address.suburb) {
+          district = address.suburb;
+        } else if (address.district) {
+          district = address.district;
+        } else if (address.county) {
+          district = address.county;
+        }
+        
+        const matchedDistrict = hcmcDistricts.find(d => 
+          district.toLowerCase().includes(d.toLowerCase()) || 
+          d.toLowerCase().includes(district.toLowerCase())
+        );
+        
+        if (matchedDistrict) district = matchedDistrict;
+        
+        const ward = address.neighbourhood || address.quarter || '';
+        
+        const street = address.road || '';
+        
+        const full_address = result.display_name || '';
+        
+        setFormData(prev => ({
+          ...prev,
+          location: {
+            ...prev.location,
+            coordinates: [lng, lat],
+            city,
+            district,
+            ward,
+            street,
+            full_address
+          }
+        }));
+        
+        if (matchedDistrict && wardsByDistrict[matchedDistrict]) {
+          setAvailableWards(wardsByDistrict[matchedDistrict]);
+        }
+        
+        toast.success('Đã tìm thấy địa chỉ ở TP.HCM');
+      } else {
+        toast.error('Không tìm thấy địa chỉ ở TP.HCM. Vui lòng thử lại với từ khóa khác.');
+      }
+    } catch (error) {
+      console.error('Error searching address:', error);
+      toast.error('Lỗi khi tìm kiếm địa chỉ. Vui lòng thử lại sau.');
+    } finally {
+      setSearchingAddress(false);
+    }
+  };
+
+  function LocationMarker() {
+    const map = useMapEvents({
+      click: async (e) => {
+        const { lat, lng } = e.latlng;
+        
+        setLoadingAddress(true);
+        
+        try {
+          const addressInfo = await getAddressFromCoordinates(lat, lng);
+          
+          if (!addressInfo) {
+            setLoadingAddress(false);
+            return;
+          }
+          
+          if (!addressInfo.isInHCMC) {
+            toast.warning('Vị trí không thuộc TP. Hồ Chí Minh. Vui lòng chọn vị trí trong phạm vi TP.HCM.');
+            setLoadingAddress(false);
+            return;
+          }
+          
+          setMarkerPosition([lat, lng]);
+          let district = addressInfo.district;
+          const matchedDistrict = hcmcDistricts.find(d => 
+            district.toLowerCase().includes(d.toLowerCase()) || 
+            d.toLowerCase().includes(district.toLowerCase())
+          );
+          
+          if (matchedDistrict) {
+            district = matchedDistrict;
+            
+            if (wardsByDistrict[matchedDistrict]) {
+              setAvailableWards(wardsByDistrict[matchedDistrict]);
+            }
+          }
+          
+          setFormData(prev => ({
+            ...prev,
+            location: {
+              ...prev.location,
+              coordinates: [lng, lat],
+              city: addressInfo.city,
+              district: district,
+              ward: addressInfo.ward,
+              street: addressInfo.street,
+              full_address: addressInfo.full_address
+            }
+          }));
+        } catch (error) {
+          console.error('Error getting address:', error);
+          toast.error('Không thể lấy thông tin địa chỉ từ tọa độ. Vui lòng thử lại.');
+        } finally {
+          setLoadingAddress(false);
+        }
+      },
+    });
+
+    useEffect(() => {
+      if (markerPosition) {
+        map.flyTo(markerPosition, map.getZoom());
+      }
+    }, [markerPosition, map]);
+
+    return markerPosition ? <Marker position={markerPosition} /> : null;
+  }
 
   // useEffect(() => {
   //   if (!user || !user.role || !user.role.includes('ADMIN')) {
@@ -96,38 +313,61 @@ function AdminVenues() {
     }
   };
 
+  
+
   const openAddModal = () => {
     setSelectedVenue(null);
     setFormData({
       name: '',
-      address: '',
       phone: '',
-      location: { lat: 10.8231, lng: 106.6297 },
+      location: {
+        type: 'Point',
+        coordinates: [106.7009, 10.7769], 
+        city: 'Thành phố Hồ Chí Minh',
+        district: '',
+        ward: '',
+        street: '',
+        full_address: ''
+      },
       sport_types: [],
       amenities: [],
       images: [],
       slots: [],
       deals: []
     });
+    
     setNewSlot({
       date: '',
       time: '',
       price: 0,
       status: 'available'
     });
+    
     setNewImage('');
     setNewDeal('');
-    setMarkerPosition([10.8231, 106.6297]);
+    setAvailableWards([]);
+    setSearchAddress('');
+    
+    setMarkerPosition([10.7769, 106.7009]);
+    
     setIsModalOpen(true);
   };
-
+  
   const openEditModal = (venue) => {
     setSelectedVenue(venue);
+    
     setFormData({
       name: venue.name,
-      address: venue.address,
       phone: venue.phone || '',
-      location: venue.location,
+      location: venue.location || {
+        type: 'Point',
+        coordinates: [106.7009, 10.7769], 
+        city: 'Thành phố Hồ Chí Minh', 
+        district: '',
+        ward: '',
+        street: '',
+        full_address: ''
+      },
       sport_types: venue.sport_types || [],
       amenities: venue.amenities || [],
       images: venue.images || [],
@@ -135,17 +375,41 @@ function AdminVenues() {
       deals: venue.deals || []
     });
     
+    if (venue.location && venue.location.city !== 'Thành phố Hồ Chí Minh') {
+      setFormData(prev => ({
+        ...prev,
+        location: {
+          ...prev.location,
+          city: 'Thành phố Hồ Chí Minh'
+        }
+      }));
+    }
+    
+    if (venue.location && venue.location.district && wardsByDistrict[venue.location.district]) {
+      setAvailableWards(wardsByDistrict[venue.location.district]);
+    } else {
+      setAvailableWards([]);
+    }
+    
+    setSearchAddress('');
+    
     setNewSlot({
       date: '',
       time: '',
       price: 0,
       status: 'available'
     });
+    
     setNewImage('');
     setNewDeal('');
     
-    if (venue.location && venue.location.lat && venue.location.lng) {
-      setMarkerPosition([venue.location.lat, venue.location.lng]);
+    if (venue.location && venue.location.coordinates && venue.location.coordinates.length === 2) {
+      setMarkerPosition([
+        venue.location.coordinates[1],
+        venue.location.coordinates[0]  
+      ]);
+    } else {
+      setMarkerPosition([10.7769, 106.7009]);
     }
     
     setIsModalOpen(true);
@@ -153,10 +417,33 @@ function AdminVenues() {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
+    
+    if (name === "location.district") {
+      setAvailableWards(wardsByDistrict[value] || []);
+      
+      setFormData(prev => ({
+        ...prev,
+        location: {
+          ...prev.location,
+          [name.split('.')[1]]: value,
+          ward: '' 
+        }
+      }));
+    } else if (name.includes('location.')) {
+      const locationField = name.split('.')[1];
+      setFormData(prev => ({
+        ...prev,
+        location: {
+          ...prev.location,
+          [locationField]: value
+        }
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
   };
 
   const addSportType = () => {
@@ -292,31 +579,51 @@ function AdminVenues() {
     try {
       setLoading(true);
       
+      if (!formData.location.district || !formData.location.ward || !formData.location.street) {
+        toast.error('Vui lòng điền đầy đủ thông tin địa chỉ (Quận/Huyện, Phường/Xã, Đường)');
+        setLoading(false);
+        return;
+      }
+      
       const dataToSend = {...formData};
       
       if (dataToSend.location) {
-        dataToSend.location = {
-          lat: parseFloat(dataToSend.location.lat),
-          lng: parseFloat(dataToSend.location.lng)
-        };
+        dataToSend.location.type = 'Point';
+        
+        dataToSend.location.city = 'Thành phố Hồ Chí Minh';
+        
+        if (markerPosition) {
+          dataToSend.location.coordinates = [
+            parseFloat(markerPosition[1]), 
+            parseFloat(markerPosition[0])  
+          ];
+        }
+        
+        if (!dataToSend.location.full_address || dataToSend.location.full_address.trim() === '') {
+          dataToSend.location.full_address = `${dataToSend.location.street}, ${dataToSend.location.ward}, ${dataToSend.location.district}, ${dataToSend.location.city}`;
+        }
       }
       
       if (dataToSend.slots && dataToSend.slots.length > 0) {
         dataToSend.slots = dataToSend.slots.map(slot => {
           const { _id, ...slotWithoutId } = slot;
-          return slotWithoutId;
+          return {
+            ...slotWithoutId,
+            price: parseFloat(slotWithoutId.price)
+          };
         });
       }
       
+      console.log('Sending data:', dataToSend);
+      
       if (selectedVenue) {
-        console.log('Updating venue:', selectedVenue._id, dataToSend);
         await courtRepo.updateCourt(selectedVenue._id, dataToSend);
         toast.success('Cập nhật sân thành công!');
       } else {
-        console.log('Adding new venue:', dataToSend);
         await courtRepo.addCourt(dataToSend);
         toast.success('Thêm sân mới thành công!');
       }
+      
       setIsModalOpen(false);
       fetchVenues();
     } catch (err) {
@@ -351,24 +658,24 @@ function AdminVenues() {
           Thêm, chỉnh sửa hoặc xóa các sân thể thao trong hệ thống
         </p>
       </div>
-
+  
       <div className="mt-8 flex justify-end">
-      <button
-        onClick={openAddModal}
-        className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors cursor-pointer"
-      >
-        <div className="flex items-center">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          Thêm sân mới
-        </div>
-      </button>
+        <button
+          onClick={openAddModal}
+          className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors cursor-pointer"
+        >
+          <div className="flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Thêm sân mới
+          </div>
+        </button>
       </div>
-
+  
       {loading && <p className="text-center mt-8">Đang tải...</p>}
       {error && <p className="text-center text-red-500 mt-8">{error}</p>}
-
+  
       {/* Danh sách venue */}
       <div className="mt-8 overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200 rounded-lg overflow-hidden">
@@ -390,7 +697,7 @@ function AdminVenues() {
                     <div className="text-sm font-medium text-gray-900">{venue.name}</div>
                   </td>
                   <td className="px-6 py-4">
-                    <div className="text-sm text-gray-500">{venue.address}</div>
+                    <div className="text-sm text-gray-500">{venue.location && venue.location.full_address}</div>
                   </td>
                   <td className="px-6 py-4">
                     <div className="text-sm text-gray-500">{venue.phone}</div>
@@ -406,25 +713,25 @@ function AdminVenues() {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                  <button
-                    onClick={() => openEditModal(venue)}
-                    className="text-emerald-600 hover:text-emerald-900 mr-4 cursor-pointer"
-                  >
-                    Sửa
-                  </button>
-                  <button
-                    onClick={() => handleDelete(venue._id)}
-                    className="text-red-600 hover:text-red-900 cursor-pointer"
-                  >
-                    Xóa
-                  </button>
+                    <button
+                      onClick={() => openEditModal(venue)}
+                      className="text-emerald-600 hover:text-emerald-900 mr-4 cursor-pointer"
+                    >
+                      Sửa
+                    </button>
+                    <button
+                      onClick={() => handleDelete(venue._id)}
+                      className="text-red-600 hover:text-red-900 cursor-pointer"
+                    >
+                      Xóa
+                    </button>
                   </td>
                 </tr>
               ))
             ) : (
               !loading && (
                 <tr>
-                  <td colSpan="5" className="px-6 py-4 text-center text-sm text-gray-500">
+                  <td colSpan="6" className="px-6 py-4 text-center text-sm text-gray-500">
                     Không có sân nào. Hãy thêm sân mới!
                   </td>
                 </tr>
@@ -433,7 +740,7 @@ function AdminVenues() {
           </tbody>
         </table>
       </div>
-
+  
       {/* Modal thêm/sửa venue */}
       {isModalOpen && (
         <div className="fixed inset-0 overflow-y-auto z-50 flex items-center justify-center">
@@ -452,7 +759,7 @@ function AdminVenues() {
                 </svg>
               </button>
             </div>
-
+  
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -479,19 +786,184 @@ function AdminVenues() {
                   />
                 </div>
               </div>
+  
+              {/* Thông tin địa chỉ */}
+              <div className="space-y-4">
+                <h4 className="font-medium text-gray-800">Thông tin vị trí tại TP.HCM</h4>
+                
+                {/* Tìm kiếm địa chỉ */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Tìm vị trí tại TP.HCM
+                  </label>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="text"
+                      value={searchAddress}
+                      onChange={(e) => setSearchAddress(e.target.value)}
+                      placeholder="Nhập địa chỉ tại TP.HCM để tìm"
+                      className="flex-1 border border-gray-300 p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    />
+                    <button
+                      type="button"
+                      onClick={searchLocationByAddress}
+                      disabled={searchingAddress}
+                      className="px-3 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors disabled:bg-emerald-400"
+                    >
+                      {searchingAddress ? (
+                        <div className="flex items-center">
+                          <svg className="animate-spin -ml-1 mr-1 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Đang tìm...
+                        </div>
+                      ) : (
+                        <div className="flex items-center">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                          </svg>
+                        </div>
+                      )}
+                    </button>
+                  </div>
+                  <p className="mt-1 text-xs text-gray-500">
+                    Gợi ý: Nhập tên đường, quận để tìm kiếm (ví dụ: Nguyễn Huệ, Quận 1)
+                  </p>
+                </div>
+                
+                {/* Bản đồ */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Vị trí (click vào bản đồ để chọn)
+                  </label>
+                  <div className="h-64 w-full border border-gray-300 rounded-md overflow-hidden">
+                    <MapContainer 
+                      center={markerPosition || [10.7769, 106.7009]} 
+                      zoom={12} 
+                      style={{ height: '100%', width: '100%' }} 
+                      scrollWheelZoom={true}
+                      maxBounds={[
+                        [10.3776, 106.3638], 
+                        [11.1601, 107.0351]  
+                      ]}
+                      minZoom={10}
+                    >
+                      <TileLayer
+                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                      />
+                      <LocationMarker />
+                    </MapContainer>
+                  </div>
+                  {markerPosition && (
+                    <div className="mt-2 text-sm text-gray-600">
+                      <div className="flex items-center">
+                        <span>Tọa độ đã chọn: {markerPosition[0].toFixed(6)}, {markerPosition[1].toFixed(6)}</span>
+                        {loadingAddress && (
+                          <div className="ml-2 flex items-center">
+                            <svg className="animate-spin h-4 w-4 text-emerald-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span className="ml-1 text-xs text-emerald-600">Đang lấy thông tin địa chỉ...</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Địa chỉ đầy đủ */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Địa chỉ đầy đủ</label>
+                  <input
+                    type="text"
+                    name="location.full_address"
+                    value={formData.location.full_address}
+                    onChange={handleInputChange}
+                    className="w-full border border-gray-300 p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    placeholder="Địa chỉ đầy đủ sẽ được tự động tạo nếu để trống"
+                  />
+                </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Địa chỉ</label>
-                <input
-                  type="text"
-                  name="address"
-                  value={formData.address}
-                  onChange={handleInputChange}
-                  className="w-full border border-gray-300 p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  required
-                />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Thành phố</label>
+                    <input
+                      type="text"
+                      name="location.city"
+                      value="Thành phố Hồ Chí Minh"
+                      readOnly
+                      className="w-full border border-gray-300 bg-gray-50 p-2 rounded-md"
+                    />
+                    <input
+                      type="hidden"
+                      name="location.city"
+                      value="Thành phố Hồ Chí Minh"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Quận/Huyện</label>
+                    <select
+                      name="location.district"
+                      value={formData.location.district}
+                      onChange={handleInputChange}
+                      className="w-full border border-gray-300 p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      required
+                    >
+                      <option value="">-- Chọn Quận/Huyện --</option>
+                      {hcmcDistricts.map((district, index) => (
+                        <option key={index} value={district}>
+                          {district}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Phường/Xã</label>
+                    {availableWards.length > 0 ? (
+                      <select
+                        name="location.ward"
+                        value={formData.location.ward}
+                        onChange={handleInputChange}
+                        className="w-full border border-gray-300 p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                        required
+                      >
+                        <option value="">-- Chọn Phường/Xã --</option>
+                        {availableWards.map((ward, index) => (
+                          <option key={index} value={ward}>{ward}</option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input
+                        type="text"
+                        name="location.ward"
+                        value={formData.location.ward}
+                        onChange={handleInputChange}
+                        className="w-full border border-gray-300 p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                        required
+                        placeholder="Nhập tên phường/xã"
+                      />
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Đường</label>
+                    <input
+                      type="text"
+                      name="location.street"
+                      value={formData.location.street}
+                      onChange={handleInputChange}
+                      className="w-full border border-gray-300 p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      required
+                      placeholder="Nhập tên đường"
+                    />
+                  </div>
+                </div>
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Vị trí (click vào bản đồ để chọn)</label>
                 <div className="h-64 w-full border border-gray-300 rounded-md overflow-hidden">
@@ -508,18 +980,20 @@ function AdminVenues() {
                     <LocationMarker 
                       position={markerPosition} 
                       setPosition={setMarkerPosition} 
-                      formData={formData}
                       setFormData={setFormData}
                     />
                   </MapContainer>
                 </div>
                 {markerPosition && (
                   <div className="mt-2 text-sm text-gray-600">
-                    Tọa độ đã chọn: {formData.location.lat.toFixed(6)}, {formData.location.lng.toFixed(6)}
+                    Tọa độ đã chọn: {markerPosition[0].toFixed(6)}, {markerPosition[1].toFixed(6)}
+                    <span className="text-xs ml-2 text-gray-500">
+                      (Lưu ý: Hệ thống lưu tọa độ dưới dạng [longitude, latitude])
+                    </span>
                   </div>
                 )}
               </div>
-
+  
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Loại sân</label>
@@ -560,7 +1034,7 @@ function AdminVenues() {
                     </div>
                   )}
                 </div>
-
+  
                 {/* Phần quản lý tiện ích */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Tiện ích</label>
@@ -602,7 +1076,7 @@ function AdminVenues() {
                   )}
                 </div>
               </div>
-
+  
               {/* Phần quản lý hình ảnh */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Hình ảnh</label>
@@ -643,7 +1117,7 @@ function AdminVenues() {
                   </div>
                 )}
               </div>
-
+  
               {/* Phần quản lý slot */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Slots (lịch trình)</label>
@@ -694,7 +1168,7 @@ function AdminVenues() {
                     </button>
                   </div>
                 </div>
-
+  
                 {formData.slots.length > 0 && (
                   <div className="mt-2">
                     <p className="text-sm font-medium text-gray-700">Danh sách slots:</p>
@@ -744,7 +1218,7 @@ function AdminVenues() {
                   </div>
                 )}
               </div>
-
+  
               {/* Phần quản lý khuyến mãi */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Khuyến mãi</label>
@@ -785,7 +1259,7 @@ function AdminVenues() {
                   </div>
                 )}
               </div>
-
+  
               <div className="flex justify-end pt-4 space-x-3 sticky bottom-0 bg-white z-10 border-t border-gray-200 mt-6 pt-4">
                 <button
                   type="button"
