@@ -130,6 +130,49 @@ function AdminVenues() {
     }
   };
   
+  const mapWardName = (wardName, district) => {
+    if (!wardName || !district || !wardsByDistrict[district]) return '';
+    
+    const cleanWardName = wardName.replace(/ward|phường|p\./gi, '').trim();
+    
+    const normalizeString = (str) => {
+      return str.toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/đ/g, "d");
+    };
+    
+    const normalizedWardName = normalizeString(cleanWardName);
+    console.log('Clean ward name:', cleanWardName);
+    console.log('Normalized ward name:', normalizedWardName);
+    
+    for (const ward of wardsByDistrict[district]) {
+      const normalizedListWard = normalizeString(ward.replace(/phường/gi, '').trim());
+      
+      if (normalizedListWard === normalizedWardName || 
+          normalizedListWard.includes(normalizedWardName) || 
+          normalizedWardName.includes(normalizedListWard)) {
+        console.log('Mapped ward name:', wardName, '->', ward);
+        return ward;
+      }
+    }
+    
+    for (const ward of wardsByDistrict[district]) {
+      const normalizedListWard = normalizeString(ward);
+      
+      const wordParts = normalizedWardName.split(' ');
+      for (const part of wordParts) {
+        if (part.length > 3 && normalizedListWard.includes(part)) {
+          console.log('Partial ward match:', wardName, '->', ward);
+          return ward;
+        }
+      }
+    }
+    
+    console.log('No ward match found for:', wardName, 'in district', district);
+    return wardName; 
+  };
+  
   const searchLocationByAddress = async () => {
     if (!searchAddress) return;
     
@@ -180,18 +223,68 @@ function AdminVenues() {
           district = address.county;
         }
         
-        const matchedDistrict = hcmcDistricts.find(d => 
-          district.toLowerCase().includes(d.toLowerCase()) || 
-          d.toLowerCase().includes(district.toLowerCase())
-        );
-        
-        if (matchedDistrict) district = matchedDistrict;
-        
         const ward = address.neighbourhood || address.quarter || '';
-        
         const street = address.road || '';
-        
         const full_address = result.display_name || '';
+        
+        console.log('Raw API response:', result);
+        console.log('Raw address data:', address);
+        console.log('Raw district from API:', district);
+        console.log('Raw ward from API:', ward);
+        
+        let matchedDistrict = null;
+        
+        const districtPatterns = {
+          "Quận 1": [/quận 1\b/i, /\bdistrict 1\b/i, /\bq1\b/i, /\bd1\b/i, /\b1st district\b/i],
+          "Quận 2": [/quận 2\b/i, /\bdistrict 2\b/i, /\bq2\b/i, /\bd2\b/i, /\b2nd district\b/i],
+          "Quận 3": [/quận 3\b/i, /\bdistrict 3\b/i, /\bq3\b/i, /\bd3\b/i, /\b3rd district\b/i],
+          "Quận 4": [/quận 4\b/i, /\bdistrict 4\b/i, /\bq4\b/i, /\bd4\b/i, /\b4th district\b/i],
+          "Quận 5": [/quận 5\b/i, /\bdistrict 5\b/i, /\bq5\b/i, /\bd5\b/i, /\b5th district\b/i],
+          "Quận 6": [/quận 6\b/i, /\bdistrict 6\b/i, /\bq6\b/i, /\bd6\b/i, /\b6th district\b/i],
+          "Quận 7": [/quận 7\b/i, /\bdistrict 7\b/i, /\bq7\b/i, /\bd7\b/i, /\b7th district\b/i],
+          "Quận 8": [/quận 8\b/i, /\bdistrict 8\b/i, /\bq8\b/i, /\bd8\b/i, /\b8th district\b/i],
+          "Quận 9": [/quận 9\b/i, /\bdistrict 9\b/i, /\bq9\b/i, /\bd9\b/i, /\b9th district\b/i],
+          "Quận 10": [/quận 10\b/i, /\bdistrict 10\b/i, /\bq10\b/i, /\bd10\b/i, /\b10th district\b/i],
+          "Quận 11": [/quận 11\b/i, /\bdistrict 11\b/i, /\bq11\b/i, /\bd11\b/i, /\b11th district\b/i],
+          "Quận 12": [/quận 12\b/i, /\bdistrict 12\b/i, /\bq12\b/i, /\bd12\b/i, /\b12th district\b/i],
+          "Quận Bình Tân": [/bình tân/i, /binh tan/i],
+          "Quận Bình Thạnh": [/bình thạnh/i, /binh thanh/i],
+          "Quận Gò Vấp": [/gò vấp/i, /go vap/i],
+          "Quận Phú Nhuận": [/phú nhuận/i, /phu nhuan/i],
+          "Quận Tân Bình": [/tân bình/i, /tan binh/i],
+          "Quận Tân Phú": [/tân phú/i, /tan phu/i],
+          "Quận Thủ Đức": [/thủ đức/i, /thu duc/i],
+          "Huyện Bình Chánh": [/bình chánh/i, /binh chanh/i],
+          "Huyện Cần Giờ": [/cần giờ/i, /can gio/i],
+          "Huyện Củ Chi": [/củ chi/i, /cu chi/i],
+          "Huyện Hóc Môn": [/hóc môn/i, /hoc mon/i],
+          "Huyện Nhà Bè": [/nhà bè/i, /nha be/i],
+          "Thành phố Thủ Đức": [/thành phố thủ đức/i, /tp thủ đức/i, /tp thu duc/i]
+        };
+        
+        for (const [districtName, patterns] of Object.entries(districtPatterns)) {
+          if (patterns.some(pattern => pattern.test(district)) || 
+              patterns.some(pattern => pattern.test(result.display_name))) {
+            matchedDistrict = districtName;
+            break;
+          }
+        }
+        
+        if (!matchedDistrict) {
+          matchedDistrict = hcmcDistricts.find(d => 
+            district.toLowerCase().includes(d.toLowerCase()) || 
+            d.toLowerCase().includes(district.toLowerCase())
+          );
+        }
+        
+        if (matchedDistrict) {
+          district = matchedDistrict;
+        }
+        
+        let mappedWard = ward;
+        if (matchedDistrict && ward && wardsByDistrict[matchedDistrict]) {
+          mappedWard = mapWardName(ward, matchedDistrict);
+        }
         
         setFormData(prev => ({
           ...prev,
@@ -200,7 +293,7 @@ function AdminVenues() {
             coordinates: [lng, lat],
             city,
             district,
-            ward,
+            ward: mappedWard,
             street,
             full_address
           }
@@ -211,6 +304,12 @@ function AdminVenues() {
         }
         
         toast.success('Đã tìm thấy địa chỉ ở TP.HCM');
+        
+        console.log('District from API:', district);
+        console.log('Matched district:', matchedDistrict);
+        console.log('Ward from API:', ward);
+        console.log('Mapped ward:', mappedWard);
+        console.log('Available wards for district:', wardsByDistrict[matchedDistrict] || []);
       } else {
         toast.error('Không tìm thấy địa chỉ ở TP.HCM. Vui lòng thử lại với từ khóa khác.');
       }
@@ -221,6 +320,34 @@ function AdminVenues() {
       setSearchingAddress(false);
     }
   };
+
+const districtPatterns = {
+  "Quận 1": [/quận 1\b/i, /\bdistrict 1\b/i, /\bq1\b/i, /\bd1\b/i, /\b1st district\b/i],
+  "Quận 2": [/quận 2\b/i, /\bdistrict 2\b/i, /\bq2\b/i, /\bd2\b/i, /\b2nd district\b/i],
+  "Quận 3": [/quận 3\b/i, /\bdistrict 3\b/i, /\bq3\b/i, /\bd3\b/i, /\b3rd district\b/i],
+  "Quận 4": [/quận 4\b/i, /\bdistrict 4\b/i, /\bq4\b/i, /\bd4\b/i, /\b4th district\b/i],
+  "Quận 5": [/quận 5\b/i, /\bdistrict 5\b/i, /\bq5\b/i, /\bd5\b/i, /\b5th district\b/i],
+  "Quận 6": [/quận 6\b/i, /\bdistrict 6\b/i, /\bq6\b/i, /\bd6\b/i, /\b6th district\b/i],
+  "Quận 7": [/quận 7\b/i, /\bdistrict 7\b/i, /\bq7\b/i, /\bd7\b/i, /\b7th district\b/i],
+  "Quận 8": [/quận 8\b/i, /\bdistrict 8\b/i, /\bq8\b/i, /\bd8\b/i, /\b8th district\b/i],
+  "Quận 9": [/quận 9\b/i, /\bdistrict 9\b/i, /\bq9\b/i, /\bd9\b/i, /\b9th district\b/i],
+  "Quận 10": [/quận 10\b/i, /\bdistrict 10\b/i, /\bq10\b/i, /\bd10\b/i, /\b10th district\b/i],
+  "Quận 11": [/quận 11\b/i, /\bdistrict 11\b/i, /\bq11\b/i, /\bd11\b/i, /\b11th district\b/i],
+  "Quận 12": [/quận 12\b/i, /\bdistrict 12\b/i, /\bq12\b/i, /\bd12\b/i, /\b12th district\b/i],
+  "Quận Bình Tân": [/bình tân/i, /binh tan/i],
+  "Quận Bình Thạnh": [/bình thạnh/i, /binh thanh/i],
+  "Quận Gò Vấp": [/gò vấp/i, /go vap/i],
+  "Quận Phú Nhuận": [/phú nhuận/i, /phu nhuan/i],
+  "Quận Tân Bình": [/tân bình/i, /tan binh/i],
+  "Quận Tân Phú": [/tân phú/i, /tan phu/i],
+  "Quận Thủ Đức": [/thủ đức/i, /thu duc/i],
+  "Huyện Bình Chánh": [/bình chánh/i, /binh chanh/i],
+  "Huyện Cần Giờ": [/cần giờ/i, /can gio/i],
+  "Huyện Củ Chi": [/củ chi/i, /cu chi/i],
+  "Huyện Hóc Môn": [/hóc môn/i, /hoc mon/i],
+  "Huyện Nhà Bè": [/nhà bè/i, /nha be/i],
+  "Thành phố Thủ Đức": [/thành phố thủ đức/i, /tp thủ đức/i, /tp thu duc/i]
+};
 
   function LocationMarker() {
     const map = useMapEvents({
@@ -244,11 +371,26 @@ function AdminVenues() {
           }
           
           setMarkerPosition([lat, lng]);
+          
+          console.log('Raw address info from map click:', addressInfo);
+          
           let district = addressInfo.district;
-          const matchedDistrict = hcmcDistricts.find(d => 
-            district.toLowerCase().includes(d.toLowerCase()) || 
-            d.toLowerCase().includes(district.toLowerCase())
-          );
+          let matchedDistrict = null;
+          
+          for (const [districtName, patterns] of Object.entries(districtPatterns)) {
+            if (patterns.some(pattern => pattern.test(district)) || 
+                patterns.some(pattern => pattern.test(addressInfo.full_address))) {
+              matchedDistrict = districtName;
+              break;
+            }
+          }
+          
+          if (!matchedDistrict) {
+            matchedDistrict = hcmcDistricts.find(d => 
+              district.toLowerCase().includes(d.toLowerCase()) || 
+              d.toLowerCase().includes(district.toLowerCase())
+            );
+          }
           
           if (matchedDistrict) {
             district = matchedDistrict;
@@ -258,6 +400,17 @@ function AdminVenues() {
             }
           }
           
+          let mappedWard = addressInfo.ward;
+          if (matchedDistrict && addressInfo.ward && wardsByDistrict[matchedDistrict]) {
+            mappedWard = mapWardName(addressInfo.ward, matchedDistrict);
+          }
+          
+          console.log('District from API:', addressInfo.district);
+          console.log('Matched district:', matchedDistrict);
+          console.log('Ward from API:', addressInfo.ward);
+          console.log('Mapped ward:', mappedWard);
+          console.log('Available wards for district:', wardsByDistrict[matchedDistrict] || []);
+          
           setFormData(prev => ({
             ...prev,
             location: {
@@ -265,7 +418,7 @@ function AdminVenues() {
               coordinates: [lng, lat],
               city: addressInfo.city,
               district: district,
-              ward: addressInfo.ward,
+              ward: mappedWard,
               street: addressInfo.street,
               full_address: addressInfo.full_address
             }
@@ -925,7 +1078,7 @@ function AdminVenues() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Phường/Xã</label>
-                    {availableWards.length > 0 ? (
+                    {formData.location.district && wardsByDistrict[formData.location.district] ? (
                       <select
                         name="location.ward"
                         value={formData.location.ward}
@@ -934,9 +1087,14 @@ function AdminVenues() {
                         required
                       >
                         <option value="">-- Chọn Phường/Xã --</option>
-                        {availableWards.map((ward, index) => (
+                        {wardsByDistrict[formData.location.district].map((ward, index) => (
                           <option key={index} value={ward}>{ward}</option>
                         ))}
+                        {/* Nếu phường hiện tại không có trong danh sách, thêm một tùy chọn riêng cho nó */}
+                        {formData.location.ward && 
+                        !wardsByDistrict[formData.location.district].includes(formData.location.ward) && (
+                          <option value={formData.location.ward}>{formData.location.ward}</option>
+                        )}
                       </select>
                     ) : (
                       <input
@@ -963,35 +1121,6 @@ function AdminVenues() {
                     />
                   </div>
                 </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Vị trí (click vào bản đồ để chọn)</label>
-                <div className="h-64 w-full border border-gray-300 rounded-md overflow-hidden">
-                  <MapContainer 
-                    center={markerPosition || [10.8231, 106.6297]} 
-                    zoom={13} 
-                    style={{ height: '100%', width: '100%' }} 
-                    scrollWheelZoom={true}
-                  >
-                    <TileLayer
-                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    />
-                    <LocationMarker 
-                      position={markerPosition} 
-                      setPosition={setMarkerPosition} 
-                      setFormData={setFormData}
-                    />
-                  </MapContainer>
-                </div>
-                {markerPosition && (
-                  <div className="mt-2 text-sm text-gray-600">
-                    Tọa độ đã chọn: {markerPosition[0].toFixed(6)}, {markerPosition[1].toFixed(6)}
-                    <span className="text-xs ml-2 text-gray-500">
-                      (Lưu ý: Hệ thống lưu tọa độ dưới dạng [longitude, latitude])
-                    </span>
-                  </div>
-                )}
               </div>
   
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
