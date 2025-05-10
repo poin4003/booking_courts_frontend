@@ -55,6 +55,16 @@ pipeline {
         }
     }
 
+    post {
+        success {
+            cleanWs()
+        }
+
+        failure {
+            cleanWs()
+        }
+    }
+
     // post {
     //     success {
     //         cleanWs()
