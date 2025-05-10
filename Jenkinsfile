@@ -46,8 +46,8 @@ pipeline {
                             npm install && \
                             npm run build && \
                             pm2 delete booking_court_frontend_server || true && \
-                            pm2 start npm --name booking_court_frontend_server -- run serve && \
-                            pm2 save
+                            pm2 start npm --name booking_court_frontend_server -- run preview && \
+                            pm2 save 
                         "
                     '''
                 }
