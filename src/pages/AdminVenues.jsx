@@ -466,8 +466,6 @@ const districtPatterns = {
     }
   };
 
-  
-
   const openAddModal = () => {
     setSelectedVenue(null);
     setFormData({
@@ -506,66 +504,78 @@ const districtPatterns = {
     setIsModalOpen(true);
   };
   
-  const openEditModal = (venue) => {
-    setSelectedVenue(venue);
-    
-    setFormData({
-      name: venue.name,
-      phone: venue.phone || '',
-      location: venue.location || {
-        type: 'Point',
-        coordinates: [106.7009, 10.7769], 
-        city: 'Thành phố Hồ Chí Minh', 
-        district: '',
-        ward: '',
-        street: '',
-        full_address: ''
-      },
-      sport_types: venue.sport_types || [],
-      amenities: venue.amenities || [],
-      images: venue.images || [],
-      slots: venue.slots || [],
-      deals: venue.deals || []
-    });
-    
-    if (venue.location && venue.location.city !== 'Thành phố Hồ Chí Minh') {
-      setFormData(prev => ({
-        ...prev,
-        location: {
-          ...prev.location,
-          city: 'Thành phố Hồ Chí Minh'
-        }
-      }));
+  const openEditModal = async (venue) => {
+    try {
+      setLoading(true);
+      
+      const response = await courtRepo.getCourtById(venue._id);
+      const venueDetail = response.metadata;
+      
+      setSelectedVenue(venueDetail);
+      
+      setFormData({
+        name: venueDetail.name || '',
+        phone: venueDetail.phone || '',
+        location: venueDetail.location || {
+          type: 'Point',
+          coordinates: [106.7009, 10.7769], 
+          city: 'Thành phố Hồ Chí Minh', 
+          district: '',
+          ward: '',
+          street: '',
+          full_address: ''
+        },
+        sport_types: venueDetail.sport_types || [],
+        amenities: venueDetail.amenities || [],
+        images: venueDetail.images || [],
+        slots: venueDetail.slots || [],
+        deals: venueDetail.deals || []
+      });
+      
+      if (venueDetail.location && venueDetail.location.city !== 'Thành phố Hồ Chí Minh') {
+        setFormData(prev => ({
+          ...prev,
+          location: {
+            ...prev.location,
+            city: 'Thành phố Hồ Chí Minh'
+          }
+        }));
+      }
+      
+      if (venueDetail.location && venueDetail.location.district && wardsByDistrict[venueDetail.location.district]) {
+        setAvailableWards(wardsByDistrict[venueDetail.location.district]);
+      } else {
+        setAvailableWards([]);
+      }
+      
+      setSearchAddress('');
+      
+      setNewSlot({
+        date: '',
+        time: '',
+        price: 0,
+        status: 'available'
+      });
+      
+      setNewImage('');
+      setNewDeal('');
+      
+      if (venueDetail.location && venueDetail.location.coordinates && venueDetail.location.coordinates.length === 2) {
+        setMarkerPosition([
+          venueDetail.location.coordinates[1],
+          venueDetail.location.coordinates[0]  
+        ]);
+      } else {
+        setMarkerPosition([10.7769, 106.7009]);
+      }
+      
+      setIsModalOpen(true);
+    } catch (err) {
+      console.error('Error fetching venue details:', err);
+      toast.error('Không thể tải thông tin chi tiết của sân. Vui lòng thử lại sau.');
+    } finally {
+      setLoading(false);
     }
-    
-    if (venue.location && venue.location.district && wardsByDistrict[venue.location.district]) {
-      setAvailableWards(wardsByDistrict[venue.location.district]);
-    } else {
-      setAvailableWards([]);
-    }
-    
-    setSearchAddress('');
-    
-    setNewSlot({
-      date: '',
-      time: '',
-      price: 0,
-      status: 'available'
-    });
-    
-    setNewImage('');
-    setNewDeal('');
-    
-    if (venue.location && venue.location.coordinates && venue.location.coordinates.length === 2) {
-      setMarkerPosition([
-        venue.location.coordinates[1],
-        venue.location.coordinates[0]  
-      ]);
-    } else {
-      setMarkerPosition([10.7769, 106.7009]);
-    }
-    
-    setIsModalOpen(true);
   };
 
   const handleInputChange = (e) => {

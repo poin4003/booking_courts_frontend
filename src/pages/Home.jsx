@@ -44,7 +44,7 @@ function Home() {
           </p>
           
           {/* Search Box */}
-          <div className="mt-10 max-w-xl mx-auto bg-white rounded-lg shadow-lg overflow-hidden md:max-w-3xl">
+          {/* <div className="mt-10 max-w-xl mx-auto bg-white rounded-lg shadow-lg overflow-hidden md:max-w-3xl">
             <div className="md:flex">
               <div className="p-4 w-full">
                 <div className="flex flex-col md:flex-row gap-4">
@@ -101,7 +101,7 @@ function Home() {
                 </div>
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
 
