@@ -951,14 +951,21 @@ function AdminVenues() {
                     className="border border-gray-300 p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     placeholder="Ngày"
                   />
-                  <input
-                    type="text"
+                  <select
                     name="time"
                     value={newSlot.time}
                     onChange={handleNewSlotChange}
                     className="border border-gray-300 p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                    placeholder="Giờ (vd: 10:00-12:00)"
-                  />
+                  >
+                    <option value="">Chọn khung giờ</option>
+                    <option value="7:00-9:00">7:00-9:00</option>
+                    <option value="9:00-11:00">9:00-11:00</option>
+                    <option value="11:00-13:00">11:00-13:00</option>
+                    <option value="13:00-15:00">13:00-15:00</option>
+                    <option value="15:00-17:00">15:00-17:00</option>
+                    <option value="17:00-19:00">17:00-19:00</option>
+                    <option value="19:00-21:00">19:00-21:00</option>
+                  </select>
                   <input
                     type="number"
                     name="price"
