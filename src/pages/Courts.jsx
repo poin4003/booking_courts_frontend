@@ -176,7 +176,7 @@ const filterCourts = () => {
         )}
 
         {!loading && !error && filteredCourts.map((court) => (
-          <div key={court._id} className="bg-white rounded-lg shadow-md overflow-hidden transition-all hover:shadow-lg">
+          <div key={court._id} className="bg-white rounded-lg shadow-md overflow-hidden transition-all hover:shadow-lg flex flex-col h-full">
             {/* Image Carousel */}
             <div className="relative h-48 group">
               {/* Hiển thị ảnh hiện tại với transition */}
@@ -250,7 +250,7 @@ const filterCourts = () => {
               
             </div>
             
-            <div className="p-4">
+            <div className="p-4 flex flex-col flex-grow">
               <div className="flex justify-between items-start">
                 <h3 className="text-lg font-semibold text-gray-900 mb-1">{court.name}</h3>
               </div>
@@ -264,23 +264,23 @@ const filterCourts = () => {
               
               {/* Phần hiển thị thông tin sport_types và amenities theo grid */}
               <div className="mt-3 mb-3">
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <p className="text-sm text-gray-500 mb-1">Loại sân:</p>
+                <div className="grid grid-cols-2 gap-2 h-24">
+                  <div className="overflow-y-auto">
+                    <p className="text-sm text-gray-500 mb-1 sticky top-0 bg-white">Loại sân:</p>
                     <div className="flex flex-wrap gap-1">
                       {court.sport_types && court.sport_types.map((type, index) => (
-                        <span key={index} className="inline-block bg-emerald-100 text-emerald-800 text-xs px-2 py-1 rounded">
+                        <span key={index} className="inline-block bg-emerald-100 text-emerald-800 text-xs px-2 py-1 rounded mb-1">
                           {type}
                         </span>
                       ))}
                     </div>
                   </div>
                   
-                  <div>
-                    <p className="text-sm text-gray-500 mb-1">Tiện ích:</p>
+                  <div className="overflow-y-auto">
+                    <p className="text-sm text-gray-500 mb-1 sticky top-0 bg-white">Tiện ích:</p>
                     <div className="flex flex-wrap gap-1">
                       {court.amenities && court.amenities.map((amenity, index) => (
-                        <span key={index} className="inline-block bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded">
+                        <span key={index} className="inline-block bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded mb-1">
                           {amenity}
                         </span>
                       ))}
@@ -289,9 +289,9 @@ const filterCourts = () => {
                 </div>
               </div>
               
-              <div className="flex justify-between items-center mt-4">
+              <div className="mt-auto pt-4">
                 <button
-                  className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors text-sm cursor-pointer"
+                  className="w-full px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors text-sm cursor-pointer"
                   onClick={() => alert(`Đặt sân: ${court.name}`)}
                 >
                   Đặt ngay
