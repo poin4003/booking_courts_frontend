@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { courtRepo } from '../api/features/CourtRepo';
+import toast from 'react-hot-toast';
 
 function Courts() {
   const [courts, setCourts] = useState([]);
@@ -9,6 +10,11 @@ function Courts() {
   const [location, setLocation] = useState('');
   const [filteredCourts, setFilteredCourts] = useState([]);
   const [currentImageIndex, setCurrentImageIndex] = useState({});
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [selectedCourt, setSelectedCourt] = useState(null);
+  const [courtDetails, setCourtDetails] = useState(null);
+  const [selectedSlot, setSelectedSlot] = useState(null);
+  const [loadingDetails, setLoadingDetails] = useState(false);
 
   useEffect(() => {
     fetchCourts();
@@ -84,6 +90,44 @@ const filterCourts = () => {
       ...prev,
       [courtId]: index
     }));
+  };
+
+  const openBookingModal = async (court) => {
+    try {
+      setSelectedCourt(court);
+      setIsBookingModalOpen(true);
+      setLoadingDetails(true);
+      
+      const response = await courtRepo.getCourtById(court._id);
+      setCourtDetails(response.metadata);
+      setSelectedSlot(null);
+    } catch (err) {
+      console.error('Error fetching court details:', err);
+      toast.error('Không thể tải thông tin chi tiết của sân. Vui lòng thử lại sau.');
+    } finally {
+      setLoadingDetails(false);
+    }
+  };
+
+  const closeBookingModal = () => {
+    setIsBookingModalOpen(false);
+    setSelectedCourt(null);
+    setCourtDetails(null);
+    setSelectedSlot(null);
+  };
+
+  const handleSlotSelect = (slot) => {
+    setSelectedSlot(slot);
+  };
+
+  const confirmBooking = () => {
+    if (!selectedSlot) {
+      toast.error('Vui lòng chọn khung giờ trước khi đặt sân');
+      return;
+    }
+    
+    toast.success(`Đã đặt sân ${selectedCourt.name} vào ngày ${new Date(selectedSlot.date).toLocaleDateString('vi-VN')} khung giờ ${selectedSlot.time}`);
+    closeBookingModal();
   };
 
   return (
@@ -287,12 +331,12 @@ const filterCourts = () => {
                     </div>
                   </div>
                 </div>
-              </div>
+              </div> 
               
               <div className="mt-auto pt-4">
                 <button
-                  className="w-full px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors text-sm cursor-pointer"
-                  onClick={() => alert(`Đặt sân: ${court.name}`)}
+                  className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors text-sm cursor-pointer"
+                  onClick={() => openBookingModal(court)}
                 >
                   Đặt ngay
                 </button>
@@ -301,7 +345,92 @@ const filterCourts = () => {
           </div>
         ))}
       </div>
+      {/* Modal đặt sân */}
+      {isBookingModalOpen && (
+        <div className="fixed inset-0 overflow-y-auto z-50 flex items-center justify-center">
+          <div className="fixed inset-0 bg-black opacity-50" onClick={closeBookingModal}></div>
+          <div className="relative bg-white rounded-lg max-w-2xl w-full mx-4 p-6 max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">
+                {selectedCourt ? `Đặt sân: ${selectedCourt.name}` : 'Đặt sân'}
+              </h3>
+              <button
+                onClick={closeBookingModal}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {loadingDetails ? (
+              <div className="flex justify-center py-10">
+                <svg className="animate-spin -ml-1 mr-3 h-10 w-10 text-emerald-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span className="text-lg text-gray-600">Đang tải dữ liệu...</span>
+              </div>
+            ) : courtDetails ? (
+              <div>
+                <p className="mb-4 text-sm text-gray-600">Vui lòng chọn khung giờ phù hợp:</p>
+                
+                {courtDetails.slots && courtDetails.slots.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {courtDetails.slots
+                      .filter(slot => slot.status === 'available')
+                      .map((slot, index) => (
+                        <div 
+                          key={index}
+                          onClick={() => handleSlotSelect(slot)}
+                          className={`p-3 border rounded-lg cursor-pointer transition-colors ${
+                            selectedSlot && selectedSlot._id === slot._id
+                              ? 'border-emerald-500 bg-emerald-50'
+                              : 'border-gray-200 hover:border-emerald-300 hover:bg-emerald-50'
+                          }`}
+                        >
+                          <div className="flex justify-between items-center">
+                            <div>
+                              <p className="font-medium">{new Date(slot.date).toLocaleDateString('vi-VN')}</p>
+                              <p className="text-sm text-gray-600">{slot.time}</p>
+                            </div>
+                            <p className="text-emerald-600 font-medium">{slot.price.toLocaleString()}₫</p>
+                          </div>
+                        </div>
+                      ))
+                    }
+                  </div>
+                ) : (
+                  <p className="text-center py-6 text-gray-500">Hiện không có khung giờ trống nào.</p>
+                )}
+                
+                <div className="flex justify-end space-x-3 mt-6 pt-4 border-t border-gray-200">
+                  <button
+                    onClick={closeBookingModal}
+                    className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+                  >
+                    Đóng
+                  </button>
+                  <button
+                    onClick={confirmBooking}
+                    disabled={!selectedSlot}
+                    className={`px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors ${
+                      !selectedSlot ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
+                  >
+                    Xác nhận đặt
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <p className="text-center py-6 text-red-500">Có lỗi xảy ra khi tải thông tin sân.</p>
+            )}
+          </div>
+        </div>
+      )}
     </div>
+    
   );
 }
 
