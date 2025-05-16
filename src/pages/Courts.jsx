@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { courtRepo } from '../api/features/CourtRepo';
 import toast from 'react-hot-toast';
+import { bookingRepo } from '../api/features/BookingRepo';
 
 function Courts() {
   const [courts, setCourts] = useState([]);
@@ -15,6 +16,7 @@ function Courts() {
   const [courtDetails, setCourtDetails] = useState(null);
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [loadingDetails, setLoadingDetails] = useState(false);
+  const [bookingNote, setBookingNote] = useState('');
 
   useEffect(() => {
     fetchCourts();
@@ -120,14 +122,33 @@ const filterCourts = () => {
     setSelectedSlot(slot);
   };
 
-  const confirmBooking = () => {
+  const confirmBooking = async () => {
     if (!selectedSlot) {
       toast.error('Vui lòng chọn khung giờ trước khi đặt sân');
       return;
     }
     
-    toast.success(`Đã đặt sân ${selectedCourt.name} vào ngày ${new Date(selectedSlot.date).toLocaleDateString('vi-VN')} khung giờ ${selectedSlot.time}`);
-    closeBookingModal();
+    try {
+      setLoadingDetails(true);
+      
+      const bookingData = {
+        venueId: selectedCourt._id,
+        slotId: selectedSlot._id,
+        paymentMethod: 'cash', 
+        note: bookingNote || ''
+      };
+      
+      await bookingRepo.bookSlot(bookingData);
+      toast.success(`Đã đặt sân ${selectedCourt.name} thành công!`);
+
+      setBookingNote('');
+      closeBookingModal();
+    } catch (err) {
+      console.error('Error booking slot:', err);
+      toast.error(err.message || 'Không thể đặt sân. Vui lòng thử lại sau.');
+    } finally {
+      setLoadingDetails(false);
+    }
   };
 
   return (
@@ -404,18 +425,29 @@ const filterCourts = () => {
                 ) : (
                   <p className="text-center py-6 text-gray-500">Hiện không có khung giờ trống nào.</p>
                 )}
+
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Ghi chú (không bắt buộc)</label>
+                  <textarea
+                    value={bookingNote}
+                    onChange={(e) => setBookingNote(e.target.value)}
+                    className="w-full border border-gray-300 p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    placeholder="Thêm ghi chú cho đơn đặt sân (nếu có)"
+                    rows="2"
+                  ></textarea>
+                </div>
                 
                 <div className="flex justify-end space-x-3 mt-6 pt-4 border-t border-gray-200">
                   <button
                     onClick={closeBookingModal}
-                    className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+                    className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors cursor-pointer"
                   >
                     Đóng
                   </button>
                   <button
                     onClick={confirmBooking}
                     disabled={!selectedSlot}
-                    className={`px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors ${
+                    className={`px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors cursor-pointer ${
                       !selectedSlot ? 'opacity-50 cursor-not-allowed' : ''
                     }`}
                   >

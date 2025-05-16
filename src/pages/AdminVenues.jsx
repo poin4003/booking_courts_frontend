@@ -415,9 +415,12 @@ function AdminVenues() {
       return;
     }
     
+    // Chỉ giữ lại các trường được backend chấp nhận
+    const { date, ...slotWithoutDate } = newSlot;
+    
     setFormData({
       ...formData,
-      slots: [...formData.slots, {...newSlot}]
+      slots: [...formData.slots, slotWithoutDate]
     });
     
     setNewSlot({
@@ -507,10 +510,12 @@ function AdminVenues() {
       
       if (dataToSend.slots && dataToSend.slots.length > 0) {
         dataToSend.slots = dataToSend.slots.map(slot => {
-          const { _id, ...slotWithoutId } = slot;
+          // Loại bỏ trường date và _id
+          const { _id, date, ...slotWithoutDateAndId } = slot;
+          
           return {
-            ...slotWithoutId,
-            price: parseFloat(slotWithoutId.price)
+            ...slotWithoutDateAndId,
+            price: parseFloat(slotWithoutDateAndId.price)
           };
         });
       }
@@ -529,7 +534,7 @@ function AdminVenues() {
       fetchVenues();
     } catch (err) {
       console.error('Error saving venue:', err);
-      toast.error(err.message || 'Đã xảy ra lỗi. Vui lòng thử lại.');
+      toast.error(err.response?.message || err.message || 'Đã xảy ra lỗi. Vui lòng thử lại.');
     } finally {
       setLoading(false);
     }
@@ -584,7 +589,6 @@ function AdminVenues() {
             <tr>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tên sân</th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Địa chỉ</th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Số điện thoại</th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Loại sân</th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tiện ích</th>
               <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Thao tác</th>
@@ -599,9 +603,6 @@ function AdminVenues() {
                   </td>
                   <td className="px-6 py-4">
                     <div className="text-sm text-gray-500">{venue.location && venue.location.full_address}</div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="text-sm text-gray-500">{venue.phone}</div>
                   </td>
                   <td className="px-6 py-4">
                     <div className="text-sm text-gray-500">
@@ -845,7 +846,7 @@ function AdminVenues() {
                             <button
                               type="button"
                               onClick={() => removeSportType(index)}
-                              className="text-red-600 hover:text-red-900"
+                              className="text-red-600 hover:text-red-900 cursor-pointer"
                             >
                               Xóa
                             </button>
@@ -886,7 +887,7 @@ function AdminVenues() {
                             <button
                               type="button"
                               onClick={() => removeAmenity(index)}
-                              className="text-red-600 hover:text-red-900"
+                              className="text-red-600 hover:text-red-900 cursor-pointer"
                             >
                               Xóa
                             </button>
@@ -1033,7 +1034,7 @@ function AdminVenues() {
                                 <button
                                   type="button"
                                   onClick={() => removeSlot(index)}
-                                  className="text-red-600 hover:text-red-900"
+                                  className="text-red-600 hover:text-red-900 cursor-pointer"
                                 >
                                   Xóa
                                 </button>
@@ -1077,7 +1078,7 @@ function AdminVenues() {
                           <button
                             type="button"
                             onClick={() => removeDeal(index)}
-                            className="text-red-600 hover:text-red-900"
+                            className="text-red-600 hover:text-red-900 cursor-pointer"
                           >
                             Xóa
                           </button>
