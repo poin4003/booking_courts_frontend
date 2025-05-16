@@ -14,6 +14,8 @@ export const ApiPath = {
   DELETECOURT: getApiPath("venue/"),
 
   //Booking
+  BOOKING: getApiPath("booking"),
+  GET_BOOKINGS: getApiPath("booking"),
 };
 
 function getApiPath(path) {

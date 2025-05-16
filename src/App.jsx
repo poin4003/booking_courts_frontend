@@ -7,6 +7,7 @@ import Courts from './pages/Courts';
 import LoginModal from './pages/Login';
 import SignupModal from './pages/Signup';
 import AdminVenues from './pages/AdminVenues';
+import Bookings from './pages/Bookings';
 
 const AdminRoute = ({ children }) => {
   // const { user } = useAuth();
@@ -27,6 +28,12 @@ function App() {
     return user ? (
       <div className="flex items-center space-x-4">
         <span className="text-emerald-100">Xin chào, {user.name}</span>
+        <Link 
+          to="/bookings" 
+          className="bg-emerald-600 text-white px-4 py-2 rounded-md hover:bg-emerald-700 transition cursor-pointer"
+        >
+          Lịch sử đặt sân
+        </Link>
         <button
           onClick={logout}
           className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition cursor-pointer"
@@ -111,6 +118,7 @@ function App() {
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/courts" element={<Courts />} />
+              <Route path="/bookings" element={<Bookings />} />
               <Route 
                 path="/admin/venues" 
                 element={
