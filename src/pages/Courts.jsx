@@ -413,7 +413,6 @@ const filterCourts = () => {
                         >
                           <div className="flex justify-between items-center">
                             <div>
-                              <p className="font-medium">{new Date(slot.date).toLocaleDateString('vi-VN')}</p>
                               <p className="text-sm text-gray-600">{slot.time}</p>
                             </div>
                             <p className="text-emerald-600 font-medium">{slot.price.toLocaleString()}₫</p>
@@ -427,12 +426,12 @@ const filterCourts = () => {
                 )}
 
                 <div className="mt-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Ghi chú (không bắt buộc)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Ghi chú</label>
                   <textarea
                     value={bookingNote}
                     onChange={(e) => setBookingNote(e.target.value)}
                     className="w-full border border-gray-300 p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                    placeholder="Thêm ghi chú cho đơn đặt sân (nếu có)"
+                    placeholder="Thêm ghi chú cho đơn đặt sân"
                     rows="2"
                   ></textarea>
                 </div>

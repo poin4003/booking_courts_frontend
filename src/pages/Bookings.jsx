@@ -109,9 +109,6 @@ function Bookings() {
                   Sân
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Ngày
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Giờ
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -139,9 +136,6 @@ function Bookings() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900">{venue ? venue.name : 'Không có thông tin'}</div>
                       <div className="text-xs text-gray-500">{venue && venue.location ? venue.location.full_address : ''}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{slot ? formatDate(slot.date) : 'N/A'}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">{slot ? slot.time : 'N/A'}</div>
