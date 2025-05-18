@@ -36,7 +36,6 @@ function AdminVenues() {
   const [newSportType, setNewSportType] = useState('');
   const [newAmenity, setNewAmenity] = useState('');
   const [newSlot, setNewSlot] = useState({
-    date: '',
     time: '',
     price: 0,
     status: 'available'
@@ -257,7 +256,6 @@ function AdminVenues() {
     });
     
     setNewSlot({
-      date: '',
       time: '',
       price: 0,
       status: 'available'
@@ -316,7 +314,6 @@ function AdminVenues() {
       }
       
       setNewSlot({
-        date: '',
         time: '',
         price: 0,
         status: 'available'
@@ -410,12 +407,11 @@ function AdminVenues() {
   };
 
   const addSlot = () => {
-    if (!newSlot.date || !newSlot.time || newSlot.price <= 0) {
+    if ( !newSlot.time || newSlot.price <= 0) {
       toast.error('Vui lòng điền đầy đủ thông tin slot');
       return;
     }
     
-    // Chỉ giữ lại các trường được backend chấp nhận
     const { date, ...slotWithoutDate } = newSlot;
     
     setFormData({
@@ -424,7 +420,6 @@ function AdminVenues() {
     });
     
     setNewSlot({
-      date: '',
       time: '',
       price: 0,
       status: 'available'
@@ -510,7 +505,6 @@ function AdminVenues() {
       
       if (dataToSend.slots && dataToSend.slots.length > 0) {
         dataToSend.slots = dataToSend.slots.map(slot => {
-          // Loại bỏ trường date và _id
           const { _id, date, ...slotWithoutDateAndId } = slot;
           
           return {
@@ -944,14 +938,6 @@ function AdminVenues() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Slots (lịch trình)</label>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
-                  <input
-                    type="date"
-                    name="date"
-                    value={newSlot.date}
-                    onChange={handleNewSlotChange}
-                    className="border border-gray-300 p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                    placeholder="Ngày"
-                  />
                   <select
                     name="time"
                     value={newSlot.time}
@@ -1005,7 +991,6 @@ function AdminVenues() {
                       <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50">
                           <tr>
-                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Ngày</th>
                             <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Giờ</th>
                             <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Giá</th>
                             <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Trạng thái</th>
@@ -1015,9 +1000,6 @@ function AdminVenues() {
                         <tbody className="bg-white divide-y divide-gray-200">
                           {formData.slots.map((slot, index) => (
                             <tr key={index} className="hover:bg-gray-50">
-                              <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
-                                {new Date(slot.date).toLocaleDateString()}
-                              </td>
                               <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{slot.time}</td>
                               <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{slot.price}</td>
                               <td className="px-3 py-2 whitespace-nowrap text-sm">
