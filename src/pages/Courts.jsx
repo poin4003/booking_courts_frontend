@@ -3,13 +3,7 @@ import { courtRepo } from '../api/features/CourtRepo';
 import toast from 'react-hot-toast';
 import { bookingRepo } from '../api/features/BookingRepo';
 
-function Courts() {
-  const [courts, setCourts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [activeType, setActiveType] = useState('all');
-  const [location, setLocation] = useState('');
-  const [filteredCourts, setFilteredCourts] = useState([]);
+function Courts({ filteredCourts = [], loading = false, error = null, fetchCourts }) {
   const [currentImageIndex, setCurrentImageIndex] = useState({});
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const [selectedCourt, setSelectedCourt] = useState(null);
@@ -19,59 +13,12 @@ function Courts() {
   const [bookingNote, setBookingNote] = useState('');
 
   useEffect(() => {
-    fetchCourts();
-  }, []);
-
-  useEffect(() => {
-    if (courts.length > 0) {
-      filterCourts();
-    }
-  }, [courts, activeType, location]);
-
-  const fetchCourts = async () => {
-    try {
-      setLoading(true);
-      const response = await courtRepo.getCourts();
-      const courtsData = response.metadata || [];
-      
-      const imageIndexMap = {};
-      courtsData.forEach(court => {
-        imageIndexMap[court._id] = 0;
-      });
-      setCurrentImageIndex(imageIndexMap);
-      
-      setCourts(courtsData);
-      setFilteredCourts(courtsData);
-      setError(null);
-    } catch (err) {
-      console.error('Error fetching courts:', err);
-      setError('Không thể tải danh sách sân. Vui lòng thử lại sau.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-const filterCourts = () => {
-  let filtered = [...courts];
-  
-  if (activeType !== 'all') {
-    filtered = filtered.filter(court => 
-      court.sport_types && court.sport_types.includes(activeType)
-    );
-  }
-  
-  if (location.trim() !== '') {
-    const locationLower = location.toLowerCase().trim();
-    filtered = filtered.filter(court => {
-      const address = court.location && court.location.full_address 
-        ? court.location.full_address.toLowerCase() 
-        : '';
-      return address.includes(locationLower);
+    const initialImageIndex = {};
+    filteredCourts.forEach((court) => {
+      initialImageIndex[court._id] = 0;
     });
-  }
-  
-  setFilteredCourts(filtered);
-};
+    setCurrentImageIndex(initialImageIndex);
+  }, [filteredCourts]);
 
   const nextImage = (courtId, imagesLength) => {
     setCurrentImageIndex(prev => ({
@@ -153,56 +100,6 @@ const filterCourts = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
-      {/* Filter UI */}
-      <div className="mb-6 bg-white p-4 rounded-lg shadow-md">
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Loại sân</label>
-            <select 
-              className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm rounded-md"
-              value={activeType}
-              onChange={(e) => setActiveType(e.target.value)}
-            >
-              <option value="all">Tất cả</option>
-              <option value="football">Sân bóng đá</option>
-              <option value="basketball">Sân bóng rổ</option>
-              <option value="tennis">Sân tennis</option>
-              <option value="volleyball">Sân bóng chuyền</option>
-            </select>
-          </div>
-          
-          <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Địa điểm</label>
-            <div className="relative rounded-md shadow-sm">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-              </div>
-              <input
-                type="text"
-                className="focus:ring-emerald-500 focus:border-emerald-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md"
-                placeholder="Nhập quận/huyện hoặc phường/xã"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-              />
-            </div>
-          </div>
-          
-          <div className="flex items-end">
-            <button
-              onClick={() => {
-                setActiveType('all');
-                setLocation('');
-              }}
-              className="bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-            >
-              Đặt lại
-            </button>
-          </div>
-        </div>
-      </div>
 
       {/* Kết quả tìm kiếm */}
       <div className="flex justify-between items-center mb-4">
@@ -274,7 +171,8 @@ const filterCourts = () => {
                       e.stopPropagation();
                       prevImage(court._id, court.images.length);
                     }}
-                    className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-30 hover:bg-opacity-50 text-white rounded-full p-1 focus:outline-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                    className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-30 hover:bg-opacity-50 text-white rounded-full 
+                    p-1 focus:outline-none opacity-0 group-hover:opacity-100 transition-opacity duration-500 cursor-pointer"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -287,7 +185,8 @@ const filterCourts = () => {
                       e.stopPropagation();
                       nextImage(court._id, court.images.length);
                     }}
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-30 hover:bg-opacity-50 text-white rounded-full p-1 focus:outline-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                    className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-30 hover:bg-opacity-50 text-white rounded-full 
+                    p-1 focus:outline-none opacity-0 group-hover:opacity-100 transition-opacity duration-500 cursor-pointer"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -399,27 +298,30 @@ const filterCourts = () => {
                 
                 {courtDetails.slots && courtDetails.slots.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {courtDetails.slots
-                      .filter(slot => slot.status === 'available')
-                      .map((slot, index) => (
-                        <div 
-                          key={index}
-                          onClick={() => handleSlotSelect(slot)}
-                          className={`p-3 border rounded-lg cursor-pointer transition-colors ${
-                            selectedSlot && selectedSlot._id === slot._id
-                              ? 'border-emerald-500 bg-emerald-50'
-                              : 'border-gray-200 hover:border-emerald-300 hover:bg-emerald-50'
-                          }`}
-                        >
-                          <div className="flex justify-between items-center">
-                            <div>
-                              <p className="text-sm text-gray-600">{slot.time}</p>
-                            </div>
-                            <p className="text-emerald-600 font-medium">{slot.price.toLocaleString()}₫</p>
+                    {courtDetails.slots.map((slot, index) => (
+                      <div 
+                        key={index}
+                        onClick={() => slot.status === 'available' && handleSlotSelect(slot)} 
+                        className={`p-3 border rounded-lg transition-colors ${
+                          slot.status === 'available'
+                            ? selectedSlot && selectedSlot._id === slot._id
+                              ? 'border-emerald-500 bg-emerald-50 cursor-pointer'
+                              : 'border-gray-200 hover:border-emerald-300 hover:bg-emerald-50 cursor-pointer'
+                            : 'border-gray-200 bg-gray-100 opacity-50 cursor-not-allowed' 
+                        }`}
+                      >
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <p className="text-sm text-gray-600">
+                              {slot.time} {slot.status === 'booked' && '(Đã đặt)'}
+                            </p>
                           </div>
+                          <p className={`font-medium ${slot.status === 'available' ? 'text-emerald-600' : 'text-gray-500'}`}>
+                            {slot.price.toLocaleString()}₫
+                          </p>
                         </div>
-                      ))
-                    }
+                      </div>
+                    ))}
                   </div>
                 ) : (
                   <p className="text-center py-6 text-gray-500">Hiện không có khung giờ trống nào.</p>
