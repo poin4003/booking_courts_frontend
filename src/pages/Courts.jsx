@@ -3,11 +3,7 @@ import { courtRepo } from '../api/features/CourtRepo';
 import toast from 'react-hot-toast';
 import { bookingRepo } from '../api/features/BookingRepo';
 
-function Courts() {
-  const [courts, setCourts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [filteredCourts, setFilteredCourts] = useState([]);
+function Courts({ filteredCourts = [], loading = false, error = null, fetchCourts }) {
   const [currentImageIndex, setCurrentImageIndex] = useState({});
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const [selectedCourt, setSelectedCourt] = useState(null);
@@ -17,31 +13,12 @@ function Courts() {
   const [bookingNote, setBookingNote] = useState('');
 
   useEffect(() => {
-    fetchCourts();
-  }, []);
-
-  const fetchCourts = async () => {
-    try {
-      setLoading(true);
-      const response = await courtRepo.getCourts();
-      const courtsData = response.metadata || [];
-      
-      const imageIndexMap = {};
-      courtsData.forEach(court => {
-        imageIndexMap[court._id] = 0;
-      });
-      setCurrentImageIndex(imageIndexMap);
-      
-      setCourts(courtsData);
-      setFilteredCourts(courtsData);
-      setError(null);
-    } catch (err) {
-      console.error('Error fetching courts:', err);
-      setError('Không thể tải danh sách sân. Vui lòng thử lại sau.');
-    } finally {
-      setLoading(false);
-    }
-  };
+    const initialImageIndex = {};
+    filteredCourts.forEach((court) => {
+      initialImageIndex[court._id] = 0;
+    });
+    setCurrentImageIndex(initialImageIndex);
+  }, [filteredCourts]);
 
   const nextImage = (courtId, imagesLength) => {
     setCurrentImageIndex(prev => ({
@@ -194,7 +171,8 @@ function Courts() {
                       e.stopPropagation();
                       prevImage(court._id, court.images.length);
                     }}
-                    className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-30 hover:bg-opacity-50 text-white rounded-full p-1 focus:outline-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                    className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-30 hover:bg-opacity-50 text-white rounded-full 
+                    p-1 focus:outline-none opacity-0 group-hover:opacity-100 transition-opacity duration-500 cursor-pointer"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -207,7 +185,8 @@ function Courts() {
                       e.stopPropagation();
                       nextImage(court._id, court.images.length);
                     }}
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-30 hover:bg-opacity-50 text-white rounded-full p-1 focus:outline-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                    className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-30 hover:bg-opacity-50 text-white rounded-full 
+                    p-1 focus:outline-none opacity-0 group-hover:opacity-100 transition-opacity duration-500 cursor-pointer"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -319,27 +298,30 @@ function Courts() {
                 
                 {courtDetails.slots && courtDetails.slots.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {courtDetails.slots
-                      .filter(slot => slot.status === 'available')
-                      .map((slot, index) => (
-                        <div 
-                          key={index}
-                          onClick={() => handleSlotSelect(slot)}
-                          className={`p-3 border rounded-lg cursor-pointer transition-colors ${
-                            selectedSlot && selectedSlot._id === slot._id
-                              ? 'border-emerald-500 bg-emerald-50'
-                              : 'border-gray-200 hover:border-emerald-300 hover:bg-emerald-50'
-                          }`}
-                        >
-                          <div className="flex justify-between items-center">
-                            <div>
-                              <p className="text-sm text-gray-600">{slot.time}</p>
-                            </div>
-                            <p className="text-emerald-600 font-medium">{slot.price.toLocaleString()}₫</p>
+                    {courtDetails.slots.map((slot, index) => (
+                      <div 
+                        key={index}
+                        onClick={() => slot.status === 'available' && handleSlotSelect(slot)} 
+                        className={`p-3 border rounded-lg transition-colors ${
+                          slot.status === 'available'
+                            ? selectedSlot && selectedSlot._id === slot._id
+                              ? 'border-emerald-500 bg-emerald-50 cursor-pointer'
+                              : 'border-gray-200 hover:border-emerald-300 hover:bg-emerald-50 cursor-pointer'
+                            : 'border-gray-200 bg-gray-100 opacity-50 cursor-not-allowed' 
+                        }`}
+                      >
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <p className="text-sm text-gray-600">
+                              {slot.time} {slot.status === 'booked' && '(Đã đặt)'}
+                            </p>
                           </div>
+                          <p className={`font-medium ${slot.status === 'available' ? 'text-emerald-600' : 'text-gray-500'}`}>
+                            {slot.price.toLocaleString()}₫
+                          </p>
                         </div>
-                      ))
-                    }
+                      </div>
+                    ))}
                   </div>
                 ) : (
                   <p className="text-center py-6 text-gray-500">Hiện không có khung giờ trống nào.</p>

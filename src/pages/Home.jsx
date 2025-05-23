@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import Courts from './Courts';
 import { courtRepo } from '../api/features/CourtRepo';
 
@@ -12,6 +11,10 @@ function Home() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    fetchCourts();
+  }, []);
+
+  useEffect(() => {
     if (courts.length > 0) {
       filterCourts();
     }
@@ -22,6 +25,7 @@ function Home() {
       setLoading(true);
       const response = await courtRepo.getCourts();
       const courtsData = response.metadata || [];
+      
       setCourts(courtsData);
       setFilteredCourts(courtsData); 
       setError(null);
