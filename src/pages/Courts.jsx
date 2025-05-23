@@ -363,7 +363,6 @@ function Courts({ filteredCourts = [], loading = false, error = null, fetchCourt
         </div>
       )}
     </div>
-    
   );
 }
 

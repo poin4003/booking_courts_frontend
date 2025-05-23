@@ -10,11 +10,11 @@ import AdminVenues from './pages/AdminVenues';
 import Bookings from './pages/Bookings';
 
 const AdminRoute = ({ children }) => {
-  // const { user } = useAuth();
+  const { user } = useAuth();
   
-  // if (!user || !user.role || !user.role.includes('ADMIN')) {
-  //   return <Navigate to="/" replace />;
-  // }
+  if (!user || !user.role || !user.role.includes('ADMIN')) {
+    return <Navigate to="/" replace />;
+  }
   
   return children;
 };
@@ -60,8 +60,8 @@ function App() {
   };
 
   const AdminLink = () => {
-    // const { user } = useAuth();
-    // if (user && user.role && user.role.includes('ADMIN')) {
+    const { user } = useAuth();
+    if (user && user.role && user.role.includes('ADMIN')) {
       return (
         <Link 
           to="/admin/venues" 
@@ -74,8 +74,8 @@ function App() {
           Quản lý
         </Link>
       );
-    // }
-    // return null;
+    }
+    return null;
   };
 
   useEffect(() => {
