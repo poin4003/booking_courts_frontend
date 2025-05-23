@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { courtRepo } from '../api/features/CourtRepo';
-// import { useAuth } from '../context/auth/AuthContext';
-// import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/auth/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
 function AdminVenues() {
-  // const { user } = useAuth();
-  // const navigate = useNavigate();
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [venues, setVenues] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -184,12 +184,12 @@ function AdminVenues() {
     }
   };
 
-  // useEffect(() => {
-  //   if (!user || !user.role || !user.role.includes('ADMIN')) {
-  //     navigate('/');
-  //     toast.error('Bạn không có quyền truy cập trang này');
-  //   }
-  // }, [user, navigate]);
+  useEffect(() => {
+    if (!user || !user.role || !user.role.includes('ADMIN')) {
+      navigate('/');
+      toast.error('Bạn không có quyền truy cập trang này');
+    }
+  }, [user, navigate]);
 
   useEffect(() => {
     fetchVenues();
@@ -1071,7 +1071,7 @@ function AdminVenues() {
                 )}
               </div>
   
-              <div className="flex justify-end pt-4 space-x-3 sticky bottom-0 bg-white z-10 border-t border-gray-200 mt-6 pt-4">
+              <div className="flex justify-end space-x-3 sticky bottom-0 bg-white z-10 border-t border-gray-200 mt-6 pt-4">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
