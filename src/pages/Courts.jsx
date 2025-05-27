@@ -11,7 +11,7 @@ function Courts({ filteredCourts = [], loading = false, error = null, fetchCourt
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [loadingDetails, setLoadingDetails] = useState(false);
   const [bookingNote, setBookingNote] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState('cash');
+  const [paymentMethod, setPaymentMethod] = useState('vnpay');
 
   useEffect(() => {
     const initialImageIndex = {};
@@ -86,22 +86,18 @@ function Courts({ filteredCourts = [], loading = false, error = null, fetchCourt
         note: bookingNote || ''
       };
 
-      if (paymentMethod === 'cash') {
-        await bookingRepo.bookSlot(bookingData);
-        toast.success(`Đã đặt sân ${selectedCourt.name} thành công!`);
-        setBookingNote('');
-        closeBookingModal();
-      } else if (paymentMethod === 'vnpay') {
+      // // if (paymentMethod === 'cash') {
+      // //   await bookingRepo.bookSlot(bookingData);
+      // //   toast.success(`Đã đặt sân ${selectedCourt.name} thành công!`);
+      // //   setBookingNote('');
+      // //   closeBookingModal();
+      // } 
+      if (paymentMethod === 'vnpay') {
         const vnpayPayload = {
           ...bookingData,
-          amount: selectedSlot.price,
-          orderDescription: `Đặt sân ${selectedCourt.name} vào ${selectedSlot.time}`,
-          orderType: 'billpayment',
-          language: 'vn',
-          bankCode: ''
         };
 
-        const response = await bookingRepo.createVnpayPayment(vnpayPayload);
+        const response = await bookingRepo.bookSlot(vnpayPayload);
         console.log('VNPay response:', response); 
 
         if (response && response.paymentUrl) {
@@ -368,7 +364,7 @@ function Courts({ filteredCourts = [], loading = false, error = null, fetchCourt
                       onChange={(e) => setPaymentMethod(e.target.value)}
                       className="w-full border border-gray-300 p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     >
-                      <option value="cash">Tiền mặt</option>
+                      {/* <option value="cash">Tiền mặt</option> */}
                       <option value="vnpay">VNPay</option>
                     </select>
                   </div>
