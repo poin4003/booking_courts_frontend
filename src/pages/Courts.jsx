@@ -94,14 +94,9 @@ function Courts({ filteredCourts = [], loading = false, error = null, fetchCourt
       } else if (paymentMethod === 'vnpay') {
         const vnpayPayload = {
           ...bookingData,
-          amount: selectedSlot.price,
-          orderDescription: `Đặt sân ${selectedCourt.name} vào ${selectedSlot.time}`,
-          orderType: 'billpayment',
-          language: 'vn',
-          bankCode: ''
         };
 
-        const response = await bookingRepo.createVnpayPayment(vnpayPayload);
+        const response = await bookingRepo.bookSlot(vnpayPayload);
         console.log('VNPay response:', response); 
 
         if (response && response.paymentUrl) {
