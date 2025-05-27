@@ -16,6 +16,8 @@ export const ApiPath = {
   //Booking
   BOOKING: getApiPath("booking"),
   GET_BOOKINGS: getApiPath("booking"),
+  VNPAY_RETURN: getApiPath("vnpay/return"),
+  PAYMENT_URL: getApiPath("vnpay/payment"),
 };
 
 function getApiPath(path) {

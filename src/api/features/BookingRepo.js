@@ -9,6 +9,10 @@ export class BookingRepoClass {
   async getBookings(limit = 10, page = 1) {
     return client.get(ApiPath.GET_BOOKINGS, { limit, page });
   }
+
+  async createVnpayPayment(bookingData) {
+    return client.post(ApiPath.PAYMENT_URL, bookingData);
+  }
 }
 
 export const bookingRepo = new BookingRepoClass();
