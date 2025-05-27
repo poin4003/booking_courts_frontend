@@ -11,6 +11,11 @@ function Courts({ filteredCourts = [], loading = false, error = null, fetchCourt
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [loadingDetails, setLoadingDetails] = useState(false);
   const [bookingNote, setBookingNote] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('cash');
+  const [cardNumber, setCardNumber] = useState('');
+  const [cardHolder, setCardHolder] = useState('');
+  const [issueDate, setIssueDate] = useState('');
+  const [otp, setOtp] = useState('');
 
   useEffect(() => {
     const initialImageIndex = {};
@@ -74,22 +79,40 @@ function Courts({ filteredCourts = [], loading = false, error = null, fetchCourt
       toast.error('Vui lòng chọn khung giờ trước khi đặt sân');
       return;
     }
-    
+
     try {
       setLoadingDetails(true);
-      
+
       const bookingData = {
         venueId: selectedCourt._id,
         slotId: selectedSlot._id,
-        paymentMethod: 'cash', 
+        paymentMethod,
         note: bookingNote || ''
       };
-      
-      await bookingRepo.bookSlot(bookingData);
-      toast.success(`Đã đặt sân ${selectedCourt.name} thành công!`);
 
-      setBookingNote('');
-      closeBookingModal();
+      if (paymentMethod === 'cash') {
+        await bookingRepo.bookSlot(bookingData);
+        toast.success(`Đã đặt sân ${selectedCourt.name} thành công!`);
+        setBookingNote('');
+        closeBookingModal();
+      } else if (paymentMethod === 'vnpay') {
+        const vnpayPayload = {
+          ...bookingData,
+          amount: selectedSlot.price,
+          orderDescription: `Đặt sân ${selectedCourt.name} vào ${selectedSlot.time}`,
+          orderType: 'billpayment',
+          language: 'vn',
+          bankCode: ''
+        };
+
+        const response = await bookingRepo.createVnpayPayment(vnpayPayload);
+
+        if (response && response.paymentUrl) {
+          window.location.href = response.paymentUrl;
+        } else {
+          throw new Error('Không thể khởi tạo thanh toán VNPay');
+        }
+      }
     } catch (err) {
       console.error('Error booking slot:', err);
       toast.error(err.message || 'Không thể đặt sân. Vui lòng thử lại sau.');
@@ -336,6 +359,64 @@ function Courts({ filteredCourts = [], loading = false, error = null, fetchCourt
                     placeholder="Thêm ghi chú cho đơn đặt sân"
                     rows="2"
                   ></textarea>
+                  <div className="mt-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Phương thức thanh toán</label>
+                    <select
+                      value={paymentMethod}
+                      onChange={(e) => setPaymentMethod(e.target.value)}
+                      className="w-full border border-gray-300 p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    >
+                      <option value="cash">Tiền mặt</option>
+                      <option value="vnpay">VNPay</option>
+                    </select>
+                    {paymentMethod === 'vnpay' && (
+                      <div className="mt-4 space-y-4 border p-4 rounded-md bg-gray-50">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Số thẻ</label>
+                          <input
+                            type="text"
+                            className="w-full border border-gray-300 p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                            placeholder="9704198526191432198"
+                            value={cardNumber}
+                            onChange={(e) => setCardNumber(e.target.value)}
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Tên chủ thẻ</label>
+                          <input
+                            type="text"
+                            className="w-full border border-gray-300 p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                            placeholder="NGUYEN VAN A"
+                            value={cardHolder}
+                            onChange={(e) => setCardHolder(e.target.value)}
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Ngày phát hành (MM/YY)</label>
+                          <input
+                            type="text"
+                            className="w-full border border-gray-300 p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                            placeholder="07/15"
+                            value={issueDate}
+                            onChange={(e) => setIssueDate(e.target.value)}
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Mật khẩu OTP</label>
+                          <input
+                            type="password"
+                            className="w-full border border-gray-300 p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                            placeholder="123456"
+                            value={otp}
+                            onChange={(e) => setOtp(e.target.value)}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
                 
                 <div className="flex justify-end space-x-3 mt-6 pt-4 border-t border-gray-200">

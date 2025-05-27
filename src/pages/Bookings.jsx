@@ -53,6 +53,8 @@ function Bookings() {
         return 'Đang chờ';
       case 'canceled':
         return 'Đã hủy';
+      case 'failed':
+        return 'Thất bại';
       default:
         return status;
     }
