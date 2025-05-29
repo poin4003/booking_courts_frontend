@@ -6,28 +6,31 @@ function Home() {
   const [activeType, setActiveType] = useState('all');
   const [location, setLocation] = useState('');
   const [courts, setCourts] = useState([]);
-  const [filteredCourts, setFilteredCourts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     fetchCourts();
-  }, []);
-
-  useEffect(() => {
-    if (courts.length > 0) {
-      filterCourts();
-    }
-  }, [courts, activeType, location]);
+  }, [activeType, location]);
 
   const fetchCourts = async () => {
     try {
       setLoading(true);
-      const response = await courtRepo.getCourts();
+      
+      const filterParams = {};
+      
+      if (activeType !== 'all') {
+        filterParams.sport_types = activeType;
+      }
+      
+      if (location.trim() !== '') {
+        filterParams.location = location.trim();
+      }
+      
+      const response = await courtRepo.getCourtsWithFilter(filterParams);
       const courtsData = response.metadata || [];
       
       setCourts(courtsData);
-      setFilteredCourts(courtsData); 
       setError(null);
     } catch (err) {
       console.error('Error fetching courts:', err);
@@ -35,28 +38,6 @@ function Home() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const filterCourts = () => {
-    let filtered = [...courts];
-    
-    if (activeType !== 'all') {
-      filtered = filtered.filter(court => 
-        court.sport_types && court.sport_types.includes(activeType)
-      );
-    }
-    
-    if (location.trim() !== '') {
-      const locationLower = location.toLowerCase().trim();
-      filtered = filtered.filter(court => {
-        const address = court.location && court.location.full_address 
-          ? court.location.full_address.toLowerCase() 
-          : '';
-        return address.includes(locationLower);
-      });
-    }
-    
-    setFilteredCourts(filtered);
   };
 
   return (
@@ -121,11 +102,10 @@ function Home() {
                 </button>
               </div>
             </div>
+          </div>
         </div>
-      </div>
         
         <div className="relative max-w-7xl mx-auto py-24 px-4 sm:py-32 sm:px-6 lg:px-8">
-          
         </div>
       </div>
 
@@ -133,9 +113,8 @@ function Home() {
       <div className="bg-white py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-
             <div className="">
-              <Courts filteredCourts={filteredCourts} loading={loading} error={error} fetchCourts={fetchCourts} />
+              <Courts courts={courts} loading={loading} error={error} fetchCourts={fetchCourts} />
             </div>
           </div>
         </div>

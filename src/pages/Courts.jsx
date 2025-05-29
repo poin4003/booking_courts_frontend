@@ -85,13 +85,6 @@ function Courts({ filteredCourts = [], loading = false, error = null, fetchCourt
         paymentMethod,
         note: bookingNote || ''
       };
-
-      // // if (paymentMethod === 'cash') {
-      // //   await bookingRepo.bookSlot(bookingData);
-      // //   toast.success(`Đã đặt sân ${selectedCourt.name} thành công!`);
-      // //   setBookingNote('');
-      // //   closeBookingModal();
-      // } 
       if (paymentMethod === 'vnpay') {
         const vnpayPayload = {
           ...bookingData,
