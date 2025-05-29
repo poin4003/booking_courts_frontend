@@ -10,13 +10,16 @@ export class CourtRepo {
     const queryString = new URLSearchParams();
 
     Object.entries(params).forEach(([key, value]) => {
-      if (
-        value &&
-        value !== "all" &&
-        typeof value === "string" &&
-        value.trim() !== ""
-      ) {
-        queryString.append(key, value);
+      if (Array.isArray(value) && value.length > 0) {
+        value.forEach((item) => {
+          if (item && typeof item === "string" && item.trim() !== "") {
+            queryString.append(key, item.trim());
+          }
+        });
+      } else if (typeof value === "number") {
+        queryString.append(key, value.toString());
+      } else if (value && typeof value === "string" && value.trim() !== "") {
+        queryString.append(key, value.trim());
       }
     });
 

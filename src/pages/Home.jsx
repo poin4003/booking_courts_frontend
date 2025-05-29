@@ -17,10 +17,13 @@ function Home() {
     try {
       setLoading(true);
       
-      const filterParams = {};
+      const filterParams = {
+        limit: 10, 
+        skip: 1
+      };
       
-      if (activeType !== 'all') {
-        filterParams.sportTypes = activeType;
+      if (activeType !== 'all' && activeType.trim() !== '') {
+        filterParams.sportTypes = [activeType.trim()];
       }
       
       if (location.trim() !== '') {
@@ -39,7 +42,6 @@ function Home() {
       setLoading(false);
     }
   };
-
 
   return (
     <div>
