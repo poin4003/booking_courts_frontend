@@ -3,7 +3,7 @@ import { courtRepo } from '../api/features/CourtRepo';
 import toast from 'react-hot-toast';
 import { bookingRepo } from '../api/features/BookingRepo';
 
-function Courts({ filteredCourts = [], loading = false, error = null, fetchCourts }) {
+function Courts({ courts = [], loading = false, error = null, fetchCourts }) {
   const [currentImageIndex, setCurrentImageIndex] = useState({});
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const [selectedCourt, setSelectedCourt] = useState(null);
@@ -15,11 +15,11 @@ function Courts({ filteredCourts = [], loading = false, error = null, fetchCourt
 
   useEffect(() => {
     const initialImageIndex = {};
-    filteredCourts.forEach((court) => {
+    courts.forEach((court) => {
       initialImageIndex[court._id] = 0;
     });
     setCurrentImageIndex(initialImageIndex);
-  }, [filteredCourts]);
+  }, [courts]);
 
   const nextImage = (courtId, imagesLength) => {
     setCurrentImageIndex(prev => ({
@@ -118,7 +118,7 @@ function Courts({ filteredCourts = [], loading = false, error = null, fetchCourt
       {/* Kết quả tìm kiếm */}
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-semibold text-gray-800">Danh sách sân</h2>
-        <p className="text-gray-600">Tìm thấy {filteredCourts.length} sân</p>
+        <p className="text-gray-600">Tìm thấy {courts.length} sân</p>
       </div>
 
       {/* Courts Grid */}
@@ -145,13 +145,13 @@ function Courts({ filteredCourts = [], loading = false, error = null, fetchCourt
           </div>
         )}
 
-        {!loading && !error && filteredCourts.length === 0 && (
+        {!loading && !error && courts.length === 0 && (
           <div className="col-span-3 text-center py-10">
             <p className="text-gray-500 text-lg">Không tìm thấy sân nào phù hợp với tiêu chí của bạn.</p>
           </div>
         )}
 
-        {!loading && !error && filteredCourts.map((court) => (
+        {!loading && !error && courts.map((court) => (
           <div key={court._id} className="bg-white rounded-lg shadow-md overflow-hidden transition-all hover:shadow-lg flex flex-col h-full">
             {/* Image Carousel */}
             <div className="relative h-48 group">
