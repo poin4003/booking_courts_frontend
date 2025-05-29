@@ -20,11 +20,11 @@ function Home() {
       const filterParams = {};
       
       if (activeType !== 'all') {
-        filterParams.sport_types = activeType;
+        filterParams.sportTypes = activeType;
       }
       
       if (location.trim() !== '') {
-        filterParams.location = location.trim();
+        filterParams.venueName = location.trim();
       }
       
       const response = await courtRepo.getCourtsWithFilter(filterParams);
@@ -39,6 +39,7 @@ function Home() {
       setLoading(false);
     }
   };
+
 
   return (
     <div>
@@ -58,17 +59,20 @@ function Home() {
             <div className="flex flex-col md:flex-row gap-4">
               <div className="flex-1">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Loại sân</label>
-                <select 
-                  className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm rounded-md"
-                  value={activeType}
-                  onChange={(e) => setActiveType(e.target.value)}
-                >
-                  <option value="all">Tất cả</option>
-                  <option value="football">Sân bóng đá</option>
-                  <option value="basketball">Sân bóng rổ</option>
-                  <option value="tennis">Sân tennis</option>
-                  <option value="volleyball">Sân bóng chuyền</option>
-                </select>
+                <div className="relative rounded-md shadow-sm">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                  </div>
+                  <input
+                    type="text"
+                    className="focus:ring-emerald-500 focus:border-emerald-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md"
+                    placeholder="Nhập loại sân (vd: football, basketball, tennis...)"
+                    value={activeType === 'all' ? '' : activeType}
+                    onChange={(e) => setActiveType(e.target.value || 'all')}
+                  />
+                </div>
               </div>
                 
               <div className="flex-1">
