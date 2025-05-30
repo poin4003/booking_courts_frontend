@@ -78,7 +78,7 @@ function Home() {
               </div>
                 
               <div className="flex-1">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Địa điểm</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Tên sân</label>
                 <div className="relative rounded-md shadow-sm">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
