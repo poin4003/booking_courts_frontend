@@ -93,7 +93,7 @@ function Bookings() {
         <div className="text-center py-10">
           <div className="text-gray-500 text-lg">Bạn chưa có lịch sử đặt sân nào.</div>
           <button 
-            onClick={() => window.location.href = '/courts'}
+            onClick={() => window.location.href = '/home'}
             className="mt-4 px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 cursor-pointer"
           >
             Đặt sân ngay

@@ -72,7 +72,6 @@ function Home() {
         return data.predictions
           .filter(place => {
             const description = place.description.toLowerCase();
-            // Chỉ lấy địa điểm trong TP.HCM
             if (!description.includes('tp. hồ chí minh') && 
                 !description.includes('thành phố hồ chí minh') && 
                 !description.includes('ho chi minh city')) {
@@ -127,10 +126,10 @@ function Home() {
   return (
     <div>
       {/* Hero Section */}
-      <div className="relative bg-emerald-700">
+      <div className="relative bg-emerald-700 h-[50vh]">
         <div className="absolute inset-0">
           <img
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover object-[center_35%]"
             src="https://images.unsplash.com/photo-1533107862482-0e6974b06ec4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80"
             alt="Sports field with bright lights"
           />
