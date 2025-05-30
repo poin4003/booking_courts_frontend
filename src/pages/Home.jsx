@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import Courts from './Courts';
-import Pagination from '../components/Pagination';
 import { courtRepo } from '../api/features/CourtRepo';
 
 function Home() {
@@ -16,30 +15,17 @@ function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pagination, setPagination] = useState({
-    totalPages: 1,
-    totalItems: 0,
-    itemsPerPage: 9,
-    hasMore: true 
-  });
-
   useEffect(() => {
     fetchCourts();
-  }, [currentPage]);
+  }, []);
 
-  const fetchCourts = async (resetPage = false) => {
+  const fetchCourts = async () => {
     try {
       setLoading(true);
       
-      const pageToFetch = resetPage ? 1 : currentPage;
-      if (resetPage) {
-        setCurrentPage(1);
-      }
-      
       const filterParams = {
-        limit: pagination.itemsPerPage,
-        skip: (pageToFetch - 1) * pagination.itemsPerPage 
+        limit: 10, 
+        skip: 1
       };
       
       if (activeType !== 'all' && activeType.trim() !== '') {
@@ -62,12 +48,6 @@ function Home() {
       const courtsData = response.metadata || [];
       
       setCourts(courtsData);
-      setPagination(prev => ({
-        ...prev,
-        hasMore: courtsData.length === pagination.itemsPerPage, 
-        totalItems: prev.totalItems 
-      }));
-      
       setError(null);
     } catch (err) {
       console.error('Error fetching courts:', err);
@@ -75,24 +55,6 @@ function Home() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const handleSearch = () => {
-    fetchCourts(true); 
-  };
-
-  const handleReset = () => {
-    setActiveType('all');
-    setLocation('');
-    setDistrict('');
-    setWard('');
-    setCurrentPage(1);
-    setTimeout(() => fetchCourts(true), 0);
   };
 
   const goongApiKey = '0cbAqIA7NZimLsVEiazPK4OdQCWStFG1jFeciE1U';
@@ -306,13 +268,19 @@ function Home() {
                 
               <div className="flex items-end space-x-2">
                 <button
-                  onClick={handleSearch}
+                  onClick={fetchCourts}
                   className="bg-emerald-600 hover:bg-emerald-700 text-white py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
                 >
                   Tìm kiếm
                 </button>
                 <button
-                  onClick={handleReset}
+                  onClick={() => {
+                    setActiveType('all');
+                    setLocation('');
+                    setDistrict('');
+                    setWard('');
+                    setTimeout(() => fetchCourts(), 0);
+                  }}
                   className="bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
                 >
                   Đặt lại
@@ -330,18 +298,9 @@ function Home() {
       <div className="bg-white py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <Courts courts={courts} loading={loading} error={error} fetchCourts={() => fetchCourts()} />
-            
-            {/* Pagination */}
-            {!loading && !error && courts.length > 0 && (
-              <Pagination
-                currentPage={currentPage}
-                hasMore={pagination.hasMore}
-                totalItems={pagination.totalItems}
-                itemsPerPage={pagination.itemsPerPage}
-                onPageChange={handlePageChange}
-              />
-            )}
+            <div className="">
+              <Courts courts={courts} loading={loading} error={error} fetchCourts={fetchCourts} />
+            </div>
           </div>
         </div>
       </div>

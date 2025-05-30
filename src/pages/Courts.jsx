@@ -3,7 +3,7 @@ import { courtRepo } from '../api/features/CourtRepo';
 import toast from 'react-hot-toast';
 import { bookingRepo } from '../api/features/BookingRepo';
 
-function Courts({ courts = [], loading = false, error = null, fetchCourts, pagination }) {
+function Courts({ courts = [], loading = false, error = null, fetchCourts }) {
   const [currentImageIndex, setCurrentImageIndex] = useState({});
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const [selectedCourt, setSelectedCourt] = useState(null);
@@ -118,12 +118,7 @@ function Courts({ courts = [], loading = false, error = null, fetchCourts, pagin
       {/* Kết quả tìm kiếm */}
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-semibold text-gray-800">Danh sách sân</h2>
-        <p className="text-gray-600">
-          {pagination ? 
-            `Hiển thị ${courts.length} trong tổng số ${pagination.totalItems} sân` :
-            `Tìm thấy ${courts.length} sân`
-          }
-        </p>
+        <p className="text-gray-600">Tìm thấy {courts.length} sân</p>
       </div>
 
       {/* Courts Grid */}
