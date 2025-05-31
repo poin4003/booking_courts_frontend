@@ -3,11 +3,11 @@ import { useAuth } from '../context/auth/AuthContext.jsx';
 import { Link } from 'react-router-dom';
 
 function SignupModal({ onClose }) {
-  const [name, setName] = useState('Pchuy');
-  const [email, setEmail] = useState('pchuy4003@gmail.com');
-  const [phone, setPhone] = useState('0917302061');
-  const [password, setPassword] = useState('12345678');
-  const [confirmPassword, setConfirmPassword] = useState('12345678');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const { signup, loading, error, user } = useAuth();
 

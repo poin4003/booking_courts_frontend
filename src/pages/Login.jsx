@@ -4,8 +4,8 @@ import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
 function LoginModal({ onClose }) {
-  const [email, setEmail] = useState('pchuy4003@gmail.com');
-  const [password, setPassword] = useState('12345678');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const { login, loading, error, user } = useAuth();
 
   const handleSubmit = async (e) => {
